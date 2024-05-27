@@ -1,10 +1,20 @@
 #!/usr/bin/env python
 # coding=utf-8
 import hashlib
+import typing
 
 
-def compute_md5(*args, **kwargs):
-    """计算md5"""
+def compute_md5(*args: typing.Any, **kwargs: typing.Any) -> str:
+    """
+    根据输入的参数计算出唯一值（将参数值拼接后最后计算md5）
+
+    Args:
+        *args: 输入的参数
+        **kwargs: 输入的k-v参数
+
+    Returns:
+        唯一值
+    """
     if not args and not kwargs:
         raise ValueError("*args or **kwargs must not be None")
     if len(args) == 1 and not kwargs:

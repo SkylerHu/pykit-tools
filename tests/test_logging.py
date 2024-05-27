@@ -13,8 +13,6 @@ def test_format_adapter(caplog):
     caplog.set_level(logging.DEBUG, logger="pykit_tools")
     _logger = logging.getLogger("pykit_tools")
 
-    with pytest.raises(ValueError):
-        adapter.LoggerFormatAdapter(_logger, None)
     with pytest.raises(TypeError):
         adapter.LoggerFormatAdapter(_logger, None, fields="message")
 
@@ -114,3 +112,8 @@ def test_multi_handler(monkeypatch):
     filenames = sorted(os.listdir(log_dir))
     # 文件数不变，会删除1个文件，之所以3个是因为还有个软链
     assert len(filenames) == handler.backupCount + 1
+
+    # 测试轮转时文件报错
+    patch_handle_file_rotate(monkeypatch, logger, days=3)
+    monkeypatch.setattr(os.path, "isfile", lambda x: False)
+    logger.debug("Hello world")

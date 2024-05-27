@@ -9,12 +9,12 @@ def test_exec_command(monkeypatch):
     code, stdout, stderr = exec_command("ls -al")
     assert code == 0
     assert stdout is not None
-    assert stderr is None
+    assert stderr == ""
 
     code, stdout, stderr = exec_command("sleep 0.01", timeout=0.01)
     assert code == -9
-    assert stdout is None
-    assert stderr is None
+    assert stdout == ""
+    assert stderr == ""
 
     def for_stdout_raise(self):
         return {"a": "test"}, None

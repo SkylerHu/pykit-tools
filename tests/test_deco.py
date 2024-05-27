@@ -5,10 +5,10 @@ import logging
 
 import pytest
 
-from pykit_tools.decorators.common import catch_exception, time_record
+from pykit_tools.decorators.common import handle_exception, time_record
 
 
-def test_catch_exception(caplog, monkeypatch):
+def test_handle_exception(caplog, monkeypatch):
     caplog.set_level(logging.DEBUG, "pykit_tools.error")
 
     def test(a, b):
@@ -19,30 +19,30 @@ def test_catch_exception(caplog, monkeypatch):
         test(1, "2")
 
     # test for max_retries and retry_for
-    fn = catch_exception(test, max_retries=2, retry_for=ValueError)
+    fn = handle_exception(test, max_retries=2, retry_for=ValueError)
     assert fn(1, 2) == 3
     assert fn(1, "2") is False
     # 重试了1次, 没有加retry_for
     assert len(caplog.records) == 1, "'max_retries' must be used in conjunction with 'retry_for'"
     caplog.clear()
-    fn = catch_exception(test, default=0, max_retries=2, retry_for=TypeError)
+    fn = handle_exception(test, default=0, max_retries=2, retry_for=TypeError)
     assert fn(1, "2") == 0
     assert len(caplog.records) == 2  # 重试了2次
 
     # test for is_raise
     caplog.clear()
-    fn = catch_exception(test, default=0, max_retries=2, retry_for=TypeError, is_raise=True)
+    fn = handle_exception(test, default=0, max_retries=2, retry_for=TypeError, is_raise=True)
     with pytest.raises(TypeError):
         fn(1, "2")
     assert len(caplog.records) == 2  # 重试了2次
 
     # test for retry_delay/retry_jitter
     caplog.clear()
-    fn = catch_exception(test, default=0, max_retries=2, retry_for=TypeError, retry_delay=0.01, retry_jitter=False)
+    fn = handle_exception(test, default=0, max_retries=2, retry_for=TypeError, retry_delay=0.01, retry_jitter=False)
     assert fn(1, "2") == 0
     monkeypatch.setattr(random, "randint", lambda *args: 0)
     assert fn(1, "2") == 0
-    fn = catch_exception(test, default=0, max_retries=2, retry_for=TypeError, retry_delay=0.1)
+    fn = handle_exception(test, default=0, max_retries=2, retry_for=TypeError, retry_delay=0.1)
     assert fn(1, "2") == 0
 
     # test for log_args
@@ -50,13 +50,13 @@ def test_catch_exception(caplog, monkeypatch):
     assert "unsupported operand type" in error_msg
     assert "args: (1, '2')" in error_msg
     caplog.clear()
-    fn = catch_exception(test, default=0, log_args=False)
+    fn = handle_exception(test, default=0, log_args=False)
     assert fn(1, "2") == 0
     assert "args: (1, '2')" not in caplog.records[-1].getMessage()
 
     # test for default is function
 
-    @catch_exception(default=dict)
+    @handle_exception(default=dict)
     def test2(a, b):
         return a + b
 

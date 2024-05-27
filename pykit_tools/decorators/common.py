@@ -3,6 +3,7 @@
 import time
 import random
 import logging
+import typing
 from functools import wraps, partial
 
 from pykit_tools.utils import get_caller_location
@@ -12,34 +13,37 @@ from pykit_tools.log.adapter import timer_common_logger
 error_logger = logging.getLogger("pykit_tools.error")
 
 
-def catch_exception(
-    fn=None,
-    default=False,
-    is_raise=False,
-    retry_for=None,
-    max_retries=1,
-    retry_delay=0,
-    retry_jitter=True,
-    log_args=True,
-):
-    """用于捕获函数异常，并在出现异常的时候返回默认值
-    :param fn:
-    :param default: 出现异常后的默认值
-    :param is_raise: 是否抛出异常；设置True时，default参数无效且一定会抛出异常，主要用于重试场景最后依然抛出异常
-    :param max_retries: 最大重试次数
-    :param retry_for: 需要重试的异常，默认不重试
-        A list/tuple of exception classes
-        eg: retry_for=(TypeError, ValueError)
-    :param retry_delay: int, 重试等待时间，默认值0（不推荐开启）
-    :param retry_jitter: bool , 重试抖动
-        用于将随机性引入指数退避延迟，以防止队列中的所有任务同时执行；
-        若设置为true, 随机范围值在[0, retry_delay]之间，随机值为真实delay时间
-    :param log_args: bool 将参数输出到日志
-    :return:
+def handle_exception(
+    func: typing.Optional[typing.Callable] = None,
+    default: typing.Any = False,
+    is_raise: bool = False,
+    retry_for: typing.Union[Exception, tuple] = Exception,
+    max_retries: int = 1,
+    retry_delay: int = 0,
+    retry_jitter: bool = True,
+    log_args: bool = True,
+) -> typing.Callable:
     """
-    if not callable(fn):
+    `装饰器` 用于捕获函数异常，并在出现异常的时候返回默认值
+
+    Args:
+        func: 函数
+        default: 出现异常后的默认值
+        is_raise: 是否抛出异常；设置True时，default参数无效且一定会抛出异常，主要用于重试场景最后依然抛出异常
+        retry_for: 需要重试的异常类/异常元组，仅当异常匹配才进行重试
+        max_retries: 最大重试次数
+        retry_delay: 重试等待时间，默认值0（不推荐开启）
+        retry_jitter: 重试抖动，用于将随机性引入指数退避延迟，以防止队列中的所有任务同时执行；
+                若设置为true, 随机范围值在[0, retry_delay]之间，随机值为真实delay时间
+        log_args: 异常时将参数输出到日志
+
+    Returns:
+        function
+
+    """
+    if not callable(func):
         return partial(
-            catch_exception,
+            handle_exception,
             default=default,
             is_raise=is_raise,
             retry_for=retry_for,
@@ -49,11 +53,13 @@ def catch_exception(
             log_args=log_args,
         )
 
+    fn = typing.cast(typing.Callable, func)
+
     @wraps(fn)
-    def _wrapper(*args, **kwargs):
+    def _wrapper(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
         result = None
         location = get_caller_location(fn)
-        error = Exception('Function "{}" not executed'.format(location))
+        error: typing.Optional[Exception] = Exception('Function "{}" not executed'.format(location))
 
         count = 0
         while error is not None and count < max_retries:
@@ -67,13 +73,13 @@ def catch_exception(
                 if log_args:
                     _msg = "%s\nargs: %s\nkwargs: %s" % (_msg, args, kwargs)
                 error_logger.exception(_msg)
-                if retry_for is not None and isinstance(e, retry_for):
+                if isinstance(e, retry_for):
                     # 可以记录重试
                     if retry_delay > 0:
                         # 延迟重试
                         delay = retry_delay
                         if retry_jitter:
-                            delay = random.randint(0, 100) * delay / 100.0
+                            delay = int(random.randint(0, 100) * delay / 100.0)
                         if delay > 0:
                             time.sleep(delay)
                 else:
@@ -90,20 +96,30 @@ def catch_exception(
     return _wrapper
 
 
-def time_record(fn=None, format_key=None, format_ret=None):
+def time_record(
+    func: typing.Optional[typing.Callable] = None,
+    format_key: typing.Optional[typing.Callable] = None,
+    format_ret: typing.Optional[typing.Callable] = None,
+) -> typing.Callable:
     """
-    函数耗时统计
-    :param fn:
-    :param format_key: 根据函数输入的参数，格式化日志记录的唯一标记key
-    :param format_ret: 根据函数返回的结果，格式化日志记录的结果ret
-    :return:
+    `装饰器` 函数耗时统计
+
+    Args:
+        func:
+        format_key: 根据函数输入的参数，格式化日志记录的唯一标记key
+        format_ret: 根据函数返回的结果，格式化日志记录的结果ret
+
+    Returns:
+        function
 
     """
-    if not callable(fn):
+    if not callable(func):
         return partial(time_record, format_key=format_key, format_ret=format_ret)
 
+    fn = typing.cast(typing.Callable, func)
+
     @wraps(fn)
-    def _wrapper(*args, **kwargs):
+    def _wrapper(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
         _start = time.monotonic()
         location = fn.__name__
 

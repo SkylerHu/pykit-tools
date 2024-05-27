@@ -1,52 +1,61 @@
 #!/usr/bin/env python
 # coding=utf-8
 import os
-import sys
+import io
 import time
+import typing
+import logging
 from logging.handlers import TimedRotatingFileHandler
 
 
 class MultiProcessTimedRotatingFileHandler(TimedRotatingFileHandler):
-    """Similar with `log.TimedRotatingFileHandler`, while this one is
-    - Multi process safe
+    """
+    Similar with `logging.TimedRotatingFileHandler`, while this one is Multi process safe.
+
+    多进程使用的LoggerHandler
     """
 
-    def __init__(self, *args, **kwargs):
-        delay = kwargs.pop("delay", False)
+    def __init__(self, *args: typing.Any, **kwargs: typing.Any) -> None:
+        delay = kwargs.get("delay", False)
         # 未初始化好，不能打开文件，所以设置delay=True
-        super(MultiProcessTimedRotatingFileHandler, self).__init__(*args, delay=True, **kwargs)
+        kwargs["delay"] = True
+        super(MultiProcessTimedRotatingFileHandler, self).__init__(*args, **kwargs)
         self.delay = delay
         self.useFileName = self._compute_fn()
         # 按需重新打开文件
-        self.stream = None
+        self.stream: typing.Optional[io.TextIOWrapper] = None  # type: ignore
         if not self.delay:
             self.stream = self._open()
 
-    def _compute_fn(self):
+    def _open(self) -> io.TextIOWrapper:
+        _file = open(self.useFileName, self.mode, encoding=self.encoding)
+        # 重置 软链接
+        try:
+            if os.path.isfile(self.baseFilename):
+                os.remove(self.baseFilename)
+            os.symlink(self.useFileName, self.baseFilename)
+        except Exception:
+            # 避免多进程并发删除
+            pass
+
+        _f = typing.cast(io.TextIOWrapper, _file)
+        # 返回打开的文件
+        return _f
+
+    def _compute_fn(self) -> str:
         if self.utc:
             t = time.gmtime()
         else:
             t = time.localtime()
-        return self.baseFilename + "." + time.strftime(self.suffix, t)
+        filename = f"{self.baseFilename}.{time.strftime(self.suffix, t)}"
+        return filename
 
-    def shouldRollover(self, record):
+    def shouldRollover(self, record: logging.LogRecord) -> bool:
         if self.useFileName != self._compute_fn():
             return True
         return False
 
-    def _open(self):
-        if sys.version_info >= (3, 9):
-            f = open(self.useFileName, self.mode, encoding=self.encoding, errors=self.errors)
-        else:
-            f = open(self.useFileName, self.mode, encoding=self.encoding)
-        # 重置 软链接
-        if os.path.isfile(self.baseFilename):
-            os.remove(self.baseFilename)
-        os.symlink(self.useFileName, self.baseFilename)
-        # 返回打开的文件
-        return f
-
-    def doRollover(self):
+    def doRollover(self) -> None:
         if self.stream:
             self.stream.close()
             self.stream = None

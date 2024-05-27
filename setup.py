@@ -5,27 +5,27 @@ import re
 from setuptools import setup, find_packages
 
 
-def read(file_name):
+def read(file_name: str) -> str:
     with open(file_name, "r") as f:
         content = f.read()
     return content
 
 
-version = re.search("__version__ = ['\"]([^'\"]+)['\"]", read("pykit_tools/__init__.py")).group(1)
+version = re.search("__version__ = ['\"]([^'\"]+)['\"]", read("pykit_tools/__init__.py")).group(1)  # type: ignore
 
 read_me = read("README.md")
 # 替换文档的相对路径为绝对路径地址
-read_me = read_me.replace("(./docs/", "(https://github.com/SkylerHu/py-tools/blob/master/docs/")
+read_me = read_me.replace("(./docs/", "(https://github.com/SkylerHu/pykit-tools/blob/master/docs/")
 
 
 setup(
-    name="py-tools",
+    name="pykit-tools",
     version=version,
-    url="https://github.com/SkylerHu/py-tools.git",
+    url="https://github.com/SkylerHu/pykit-tools.git",
     author="SkylerHu",
     author_email="skylerhu@qq.com",
     description="python tools",
-    keywords=["python", "tools", "utils", "py-tools", "py-utils"],
+    keywords=["python", "tools", "utils", "py-tools", "pykit-tools", "py-toolkit", "py-utils"],
     long_description=read_me,
     long_description_content_type="text/markdown",
     packages=find_packages(exclude=["tests*", "tests"]),
@@ -54,7 +54,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.12w",
         "Programming Language :: Python :: Implementation :: CPython",
     ],
 )
