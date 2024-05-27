@@ -40,7 +40,7 @@ jobs:
         run: pip install tox coveralls
 
       - name: Run tox targets for ${{ matrix.python }}
-        run: tox run -f py$(echo ${{ matrix.python }} | tr -d .)
+        run: tox run -e py$(echo ${{ matrix.python }} | tr -d .)
 
       - name: Upload coverage
         if: ${{ matrix.python == '3.9' }}

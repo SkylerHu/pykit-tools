@@ -22,7 +22,7 @@ class LoggerFormatAdapter(logging.LoggerAdapter):
     def __init__(
         self,
         logger: logging.Logger,
-        extra: typing.Optional[dict],
+        extra: dict,
         fields: typing.Optional[typing.Union[list[str], tuple[str]]] = None,
         delimiter: str = " ",
         fmt: str = "{}",
