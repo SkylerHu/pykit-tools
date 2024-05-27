@@ -28,7 +28,7 @@ class MultiProcessTimedRotatingFileHandler(TimedRotatingFileHandler):
             self.stream = self._open()
 
     def _open(self) -> io.TextIOWrapper:
-        _file = open(self.useFileName, self.mode, encoding=self.encoding)
+        _file = open(self.useFileName, self.mode, encoding=self.encoding, errors=self.errors)
         # 重置 软链接
         try:
             if os.path.isfile(self.baseFilename):
