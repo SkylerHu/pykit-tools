@@ -1,13 +1,13 @@
 # pykit-tools
 
-[![PyPI - Version](https://img.shields.io/pypi/v/pykit_tools)](https://github.com/SkylerHu/pykit-tools)
+[![PyPI - Version](https://img.shields.io/pypi/v/pykit-tools)](https://github.com/SkylerHu/pykit-tools)
 [![GitHub Actions Workflow Status](https://github.com/SkylerHu/pykit-tools/actions/workflows/pre-commit.yml/badge.svg?branch=master)](https://github.com/SkylerHu/pykit-tools)
 [![GitHub Actions Workflow Status](https://github.com/SkylerHu/pykit-tools/actions/workflows/test-py3.yml/badge.svg?branch=master)](https://github.com/SkylerHu/pykit-tools)
 [![Coveralls](https://img.shields.io/coverallsCoverage/github/SkylerHu/pykit-tools?branch=master)](https://github.com/SkylerHu/pykit-tools)
-[![PyPI - Wheel](https://img.shields.io/pypi/wheel/pykit_tools)](https://github.com/SkylerHu/pykit-tools)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pykit_tools)](https://github.com/SkylerHu/pykit-tools)
-[![PyPI - Implementation](https://img.shields.io/pypi/implementation/pykit_tools)](https://github.com/SkylerHu/pykit-tools)
-[![GitHub License](https://img.shields.io/github/license/SkylerHu/pykit_tools)](https://github.com/SkylerHu/pykit-tools)
+[![PyPI - Wheel](https://img.shields.io/pypi/wheel/pykit-tools)](https://github.com/SkylerHu/pykit-tools)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pykit-tools)](https://github.com/SkylerHu/pykit-tools)
+[![PyPI - Implementation](https://img.shields.io/pypi/implementation/pykit-tools)](https://github.com/SkylerHu/pykit-tools)
+[![GitHub License](https://img.shields.io/github/license/SkylerHu/pykit-tools)](https://github.com/SkylerHu/pykit-tools)
 
 Some methods and decorators commonly used in Python development are encapsulated into lib for easy access and use by other projects.
 
