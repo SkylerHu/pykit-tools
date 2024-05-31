@@ -1,4 +1,4 @@
-# 文档(Reference)
+# 使用(Usage)
 
 ## 装饰器
 ::: decorators.common

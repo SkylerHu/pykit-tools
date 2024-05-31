@@ -21,7 +21,7 @@ Python开发经常用的一些方法和装饰器，封装成lib方便其他项�
 
 可查看版本变更记录 [ChangeLog](docs/CHANGELOG-1.x.md)
 
-## 2. 使用(Usage)
+## 2. 介绍
 各函数具体使用说明可以 [readthedocs](https://pykit-tools.readthedocs.io/zh-cn/latest/?badge=latest) 或者直接查看源码注释。
 
 ### 2.1 装饰器decorator
