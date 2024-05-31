@@ -3,8 +3,8 @@ repo_url: https://github.com/SkylerHu/pykit-tools
 docs_dir: .
 
 theme:
-#  name: readthedocs
-  name: material
+  name: readthedocs
+#  name: material
   language: zh
 
 nav:

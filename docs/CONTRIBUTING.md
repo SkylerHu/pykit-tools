@@ -44,7 +44,9 @@ mkdocs serve  # 可以启动本地访问文档
 ```
 
 # 打包发版
+
 （以下命令都定义在了Makefile中了）
+
 - `make clean-build` 删除本地构建缓存目录：`pykit_tools.egg-info`和`dist`
 - `python setup.py sdist bdist_wheel` 执行打包
 - `twine check dist/py*(.whl|.tar.gz)` 检查生成的文件是否符合pypi的要求
