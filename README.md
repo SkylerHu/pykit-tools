@@ -19,7 +19,7 @@ Python开发经常用的一些方法和装饰器，封装成lib方便其他项�
 
 	pip install pykit-tools
 
-可查看版本变更记录 [ChangeLog](docs/CHANGELOG-1.x.md)
+可查看版本变更记录 [ChangeLog](./docs/CHANGELOG-1.x.md)
 
 ## 2. 介绍
 各函数具体使用说明可以 [readthedocs](https://pykit-tools.readthedocs.io) 或者直接查看源码注释。
@@ -39,6 +39,7 @@ Python开发经常用的一些方法和装饰器，封装成lib方便其他项�
 ### 2.4 其他工具集
 - `cmd.exec_command` 执行shell命令
 - `str_tool.compute_md5` 根据输入的参数计算出唯一值（将参数值拼接后最后计算md5）
+- `str_tool.base64url_encode` 和 `str_tool.base64url_decode` URL安全的Base64编码
 
 ## 3. 配置
 

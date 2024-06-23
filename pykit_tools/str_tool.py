@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
-import hashlib
 import typing
+import hashlib
+import base64
 
 
 def compute_md5(*args: typing.Any, **kwargs: typing.Any) -> str:
@@ -30,3 +31,87 @@ def compute_md5(*args: typing.Any, **kwargs: typing.Any) -> str:
     hl.update(input_str.encode(encoding="utf-8"))
     _key = hl.hexdigest()
     return _key
+
+
+def is_number(s: str) -> bool:
+    """
+    判断字符串是否是数值
+
+    Args:
+        s: 输入字符串
+
+    Returns:
+        返回判断结果
+
+    """
+    if s.isdigit():
+        # 只能判断正整数
+        return True
+    try:
+        float(s)
+        return True
+    except ValueError:
+        pass
+    return False
+
+
+def str_to_number(s: str) -> typing.Union[int, float]:
+    """
+    字符串转化成数字
+
+    Args:
+        s: 输入字符串
+
+    Returns:
+        输出数值，若是不能转化会抛出异常
+
+    """
+    if s.isdigit():
+        return int(s)
+    f = float(s)
+    i = int(f)
+    if f == i:
+        # 浮点和整数相等，直接返回整数
+        return i
+    # 返回浮点数
+    return f
+
+
+def base64url_encode(value: str) -> str:
+    """
+    对内容进行URL安全的Base64编码，需要将结果中的部分编码替换：
+
+    - 将结果中的加号 `+` 替换成短划线 `-`;
+    - 将结果中的正斜线 `/` 替换成下划线 `_`;
+    - 将结果中尾部的所有等号 `=` 省略。
+
+    Args:
+        value: 输入字符串
+
+    Returns:
+        返回编码后字符串
+
+    """
+    s = base64.urlsafe_b64encode(value.encode()).decode()
+    s = s.strip("=")
+    return s
+
+
+def base64url_decode(value: str) -> str:
+    """
+    对URL安全编码进行解码
+
+    Args:
+        value: 输入编码字符串
+
+    Returns:
+        解码后字符串
+
+    """
+    # 补全后面等号
+    padding = 4 - (len(value) % 4)
+    value = value + ("=" * padding)
+    # 解码
+    s = base64.urlsafe_b64decode(value.encode()).decode()
+    s = s.strip("=")
+    return s
