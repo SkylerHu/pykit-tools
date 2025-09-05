@@ -34,7 +34,7 @@ setup(
     zip_safe=False,
     platforms="any",
     install_requires=[
-        "py-enum>=1.1.1",
+        "py-enum>=2.1.1",
     ],
     extras_require={
         "redis": [

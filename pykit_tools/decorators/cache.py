@@ -59,7 +59,7 @@ def method_deco_cache(
     func: typing.Optional[typing.Callable] = None,
     key: typing.Optional[typing.Union[str, typing.Callable]] = None,
     timeout: int = 60,
-    scene: str = CacheScene.DEFAULT,  # type: ignore
+    scene: str = CacheScene.DEFAULT.value,
     cannot_cache: typing.Union[list, tuple] = (None, False),
     cache_client: typing.Any = None,
     cache_max_length: int = 33554432,
@@ -68,7 +68,7 @@ def method_deco_cache(
     `装饰器` 方法缓存结果, 只能缓存json序列化的数据类型
 
     Args:
-        func: 可以在放在参数添加 scene=CacheScene.DEGRADED,可以强制进行刷新
+        func: 可以在放在参数添加 scene=CacheScene.DEGRADED.value,可以强制进行刷新
         key: str, 缓存数据存储的key； 也可以传递func，根据参数动态构造
         timeout: 缓存超时时间，单位 秒(s)
         scene: 默认使用场景 [CacheScene](./#decorators.cache.CacheScene)
@@ -145,7 +145,7 @@ def method_deco_cache(
     def _wrapper(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
         # 内置参数，force缓存
         _scene = kwargs.pop("scene", scene)
-        if _scene not in CacheScene:  # type: ignore
+        if _scene not in CacheScene:
             raise TypeError("scene={} not supported".format(scene))
 
         _client = __get_cache_client()
@@ -157,7 +157,7 @@ def method_deco_cache(
         # else:
         #     _key = "method:{}".format(str_tool.compute_md5(*args, **kwargs))
 
-        if _scene in (CacheScene.DEFAULT,):
+        if _scene in (CacheScene.DEFAULT.value,):
             # 直接从缓存里获取结果
             has_cache, data = __load_cache_data(_client, _key)
             if has_cache and __allow_value_cache(data):
@@ -167,7 +167,7 @@ def method_deco_cache(
         try:
             ret = fn(*args, **kwargs)
         except Exception as e:
-            if _scene == CacheScene.DEGRADED:
+            if _scene == CacheScene.DEGRADED.value:
                 # 降级处理
                 has_cache, data = __load_cache_data(_client, _key)
                 if has_cache and __allow_value_cache(data):
