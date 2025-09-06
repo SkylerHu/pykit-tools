@@ -23,7 +23,7 @@ jobs:
         ports:
           - 6379:6379
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python: [ "3.9", "3.10", "3.11", "3.12" ]
