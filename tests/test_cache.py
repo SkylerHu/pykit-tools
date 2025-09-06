@@ -39,15 +39,15 @@ def test_deco_cache(caplog):
     assert v != fn()
 
     # test for scene
-    fn = method_deco_cache(test, scene=cache.CacheScene.DEGRADED)
+    fn = method_deco_cache(test, scene=cache.CacheScene.DEGRADED.value)
     assert fn() != fn()
     fn = method_deco_cache(test)
     v = fn()
     assert v == fn()
     with pytest.raises(TypeError):
         fn(scene=1)  # 非法数值
-    assert v != fn(scene=cache.CacheScene.DEGRADED)
-    assert v != fn(scene=cache.CacheScene.SKIP)
+    assert v != fn(scene=cache.CacheScene.DEGRADED.value)
+    assert v != fn(scene=cache.CacheScene.SKIP.value)
 
     # test for cannot_cache
     fn = method_deco_cache(test, cannot_cache=lambda a: isinstance(a, str))
@@ -160,11 +160,11 @@ def test_cache_raise(caplog):
     # 若是提前已有缓存
     client.set("test", json.dumps(3, separators=(",", ":")))
     assert test(1, "2") == 3
-    assert test(1, "2", scene=cache.CacheScene.DEGRADED) == 3
+    assert test(1, "2", scene=cache.CacheScene.DEGRADED.value) == 3
     # 设置了标记不被缓存的数据
     client.set("test", json.dumps(False, separators=(",", ":")))
     with pytest.raises(Exception):
-        test(1, "2", scene=cache.CacheScene.DEGRADED)
+        test(1, "2", scene=cache.CacheScene.DEGRADED.value)
 
     class Test(object):
         def __init__(self):

@@ -1,5 +1,8 @@
 # Release Notes
 
+## 1.0.2
+- fix: update py-enum>=2.1.1
+
 ## 1.0.1 (2024-06-02)
 - feat: str_tool中增加函数支持
     - `base64url_encode` 和 `base64url_decode` URL安全的Base64编码
