@@ -26,7 +26,8 @@ class SettingsProxy(object):
                 _settings = importlib.import_module(_settings_module)
             else:
                 print(
-                    "Warning: settings configuration file not found, Can be set through the environment variable "
+                    "Warning: pykit-tools settings configuration file not found, "
+                    "Can be set through the environment variable "
                     '"export PY_SETTINGS_MODULE=${your_project.settings_file.py}"'
                 )
         except Exception:

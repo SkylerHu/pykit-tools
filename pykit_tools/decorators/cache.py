@@ -67,6 +67,8 @@ def method_deco_cache(
     """
     `装饰器` 方法缓存结果, 只能缓存json序列化的数据类型
 
+    注意：若是在类的实例方法上使用，需要注意 self 参数的影响，可设置key或者将类单例后使用
+
     Args:
         func: 可以在放在参数添加 scene=CacheScene.DEGRADED.value,可以强制进行刷新
         key: str, 缓存数据存储的key； 也可以传递func，根据参数动态构造
@@ -154,9 +156,8 @@ def method_deco_cache(
         else:
             location = utils.get_caller_location(fn)
             _key = "method:{}:{}".format(fn.__name__, str_tool.compute_md5(location, *args, **kwargs))
-        # else:
-        #     _key = "method:{}".format(str_tool.compute_md5(*args, **kwargs))
 
+        # 可传递 skip 不读取缓存
         if _scene in (CacheScene.DEFAULT.value,):
             # 直接从缓存里获取结果
             has_cache, data = __load_cache_data(_client, _key)

@@ -134,9 +134,9 @@ def time_record(
             _ret = ret
             # 日志记录的唯一标识
             key = "-"
-            if args and len(args) > 0:
-                key = str(args[0])
             try:
+                if args and len(args) > 0:
+                    key = str(args[0])
                 location = get_caller_location(fn)
                 if callable(format_key):
                     key = format_key(*args, **kwargs)

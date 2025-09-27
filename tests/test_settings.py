@@ -21,7 +21,7 @@ def test_proxy(monkeypatch, capsys):
     assert SettingsProxy().APP_CACHE_REDIS is None
     # 有提示
     captured = capsys.readouterr()
-    assert "Warning: settings configuration file not found" in captured.out
+    assert "Warning: pykit-tools settings configuration file not found" in captured.out
 
     monkeypatch.setenv("PY_SETTINGS_MODULE", "tests.settings_v2")
     assert SettingsProxy().APP_CACHE_REDIS is None
