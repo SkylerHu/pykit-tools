@@ -40,7 +40,7 @@ class LoggerFormatAdapter(logging.LoggerAdapter):
         super(LoggerFormatAdapter, self).__init__(logger, extra)
         if fields:
             if not isinstance(fields, (list, tuple)) or any([not isinstance(f, str) for f in fields]):
-                raise TypeError("fields={}, fields item must be a string".format(fields))
+                raise TypeError(f"fields={fields}, fields item must be a string")
             fmt = delimiter.join(["{%s}" % f for f in fields])
         self.fields = fields
         self.fmt: str = fmt
@@ -59,7 +59,7 @@ class LoggerFormatAdapter(logging.LoggerAdapter):
 
         """
         if not isinstance(msg, dict):
-            raise TypeError("msg={}, LoggerFormatAdapter process msg must be a dict".format(msg))
+            raise TypeError(f"msg={msg}, LoggerFormatAdapter process msg must be a dict")
         extra: dict = {}
         if self.extra:
             extra.update(self.extra)

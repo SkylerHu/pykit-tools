@@ -10,9 +10,6 @@ from pykit_tools.utils import get_caller_location
 from pykit_tools.log.adapter import timer_common_logger
 
 
-error_logger = logging.getLogger("pykit_tools.error")
-
-
 def handle_exception(
     func: typing.Optional[typing.Callable] = None,
     default: typing.Any = False,
@@ -22,6 +19,7 @@ def handle_exception(
     retry_delay: int = 0,
     retry_jitter: bool = True,
     log_args: bool = True,
+    logger_name: str = "pykit_tools.error",
 ) -> typing.Callable:
     """
     `装饰器` 用于捕获函数异常，并在出现异常的时候返回默认值
@@ -36,6 +34,7 @@ def handle_exception(
         retry_jitter: 重试抖动，用于将随机性引入指数退避延迟，以防止队列中的所有任务同时执行；
                 若设置为true, 随机范围值在[0, retry_delay]之间，随机值为真实delay时间
         log_args: 异常时将参数输出到日志
+        logger_name: 日志名称，仅记录异常时使用
 
     Returns:
         function
@@ -51,6 +50,7 @@ def handle_exception(
             retry_delay=retry_delay,
             retry_jitter=retry_jitter,
             log_args=log_args,
+            logger_name=logger_name,
         )
 
     fn = typing.cast(typing.Callable, func)
@@ -59,7 +59,7 @@ def handle_exception(
     def _wrapper(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
         result = None
         location = get_caller_location(fn)
-        error: typing.Optional[Exception] = Exception('Function "{}" not executed'.format(location))
+        error: typing.Optional[Exception] = Exception(f'Function "{location}" not executed')
 
         count = 0
         while error is not None and count < max_retries:
@@ -72,7 +72,7 @@ def handle_exception(
                 _msg = "%s retry=%d %s" % (location, count, str(e))
                 if log_args:
                     _msg = "%s\nargs: %s\nkwargs: %s" % (_msg, args, kwargs)
-                error_logger.exception(_msg)
+                logging.getLogger(logger_name).exception(_msg)
                 if isinstance(e, retry_for):
                     # 可以记录重试
                     if retry_delay > 0:
@@ -100,6 +100,7 @@ def time_record(
     func: typing.Optional[typing.Callable] = None,
     format_key: typing.Optional[typing.Callable] = None,
     format_ret: typing.Optional[typing.Callable] = None,
+    logger_name: str = "pykit_tools.error",
 ) -> typing.Callable:
     """
     `装饰器` 函数耗时统计
@@ -108,13 +109,14 @@ def time_record(
         func:
         format_key: 根据函数输入的参数，格式化日志记录的唯一标记key
         format_ret: 根据函数返回的结果，格式化日志记录的结果ret
+        logger_name: 日志名称，仅记录异常时使用
 
     Returns:
         function
 
     """
     if not callable(func):
-        return partial(time_record, format_key=format_key, format_ret=format_ret)
+        return partial(time_record, format_key=format_key, format_ret=format_ret, logger_name=logger_name)
 
     fn = typing.cast(typing.Callable, func)
 
@@ -144,7 +146,7 @@ def time_record(
                 if callable(format_ret):
                     _ret = format_ret(ret)
             except Exception as e:
-                error_logger.exception("%s %s\nargs=%s\nkwargs=%s", location, str(e), args, kwargs)
+                logging.getLogger(logger_name).exception(f"{location} {str(e)}\nargs={args}\nkwargs={kwargs}")
 
             timer_common_logger.info(dict(location=location, key=key, cost=cost, ret=_ret))
 

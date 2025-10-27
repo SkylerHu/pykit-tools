@@ -6,7 +6,7 @@ import importlib
 
 
 __all__ = ["settings", "VERSION"]
-__version__ = "1.0.2"
+__version__ = "1.1.0"
 
 import typing
 
@@ -52,7 +52,7 @@ class SettingsProxy(object):
             else:
                 value = super(SettingsProxy, self).__getattribute__(attr)
         except AttributeError:
-            raise AttributeError('settings has no attribute "{}"'.format(attr))
+            raise AttributeError(f'settings has no attribute "{attr}"')
         return value
 
     def __setattr__(self, name: str, value: typing.Any) -> None:

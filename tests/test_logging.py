@@ -38,7 +38,7 @@ def test_format_logger():
 
 
 def get_logger(name, **kwargs):
-    file_name = os.path.join(os.getcwd(), "{}.log".format(name))
+    file_name = os.path.join(os.getcwd(), f"{name}.log")
     _handler = handlers.MultiProcessTimedRotatingFileHandler(file_name, when="D", **kwargs)
     fmt = logging.Formatter("%(asctime)s %(levelname)s %(module)s.%(name)s[%(lineno)s] %(message)s")
     _handler.setFormatter(fmt)
@@ -94,7 +94,7 @@ def test_multi_handler(monkeypatch):
     filenames = sorted(os.listdir(log_dir))
     assert len(filenames) == 2
     assert file_name in filenames
-    assert os.path.islink(file_name), "{} is not a link".format(file_name)
+    assert os.path.islink(file_name), f"{file_name} is not a link"
     assert os.path.basename(os.readlink(file_name)) == filenames[1], filenames
 
     # 轮转日志
