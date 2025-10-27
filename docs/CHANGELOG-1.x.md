@@ -1,7 +1,7 @@
 # Release Notes
 
 ## 1.1.0
-- feat: 调整装饰器可以通过参数传递name名称使用logger
+- feat: 调整函数可以通过参数传递name名称使用logger
     - `exec_command` 函数新增参数 `logger_name`
     - `method_deco_cache` 函数新增参数 `err_logger_name`
     - `handle_exception` 函数新增参数 `err_logger_name`
