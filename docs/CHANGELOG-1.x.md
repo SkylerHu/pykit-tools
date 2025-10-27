@@ -2,10 +2,7 @@
 
 ## 1.1.0
 - feat: 调整函数可以通过参数传递name名称使用logger
-    - `exec_command` 函数新增参数 `logger_name`
-    - `method_deco_cache` 函数新增参数 `err_logger_name`
-    - `handle_exception` 函数新增参数 `err_logger_name`
-    - `time_record` 函数新增参数 `err_logger_name`
+    - 涉及函数有：`exec_command`/`method_deco_cache`/`handle_exception`/`time_record`
 - refactor: 字符串format函数都替换成`f`写法
 
 ## 1.0.2
