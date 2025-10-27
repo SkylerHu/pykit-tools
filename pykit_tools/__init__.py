@@ -6,7 +6,7 @@ import importlib
 
 
 __all__ = ["settings", "VERSION"]
-__version__ = "1.0.2"
+__version__ = "1.1.0"
 
 import typing
 
@@ -26,7 +26,8 @@ class SettingsProxy(object):
                 _settings = importlib.import_module(_settings_module)
             else:
                 print(
-                    "Warning: settings configuration file not found, Can be set through the environment variable "
+                    "Warning: pykit-tools settings configuration file not found, "
+                    "Can be set through the environment variable "
                     '"export PY_SETTINGS_MODULE=${your_project.settings_file.py}"'
                 )
         except Exception:
@@ -51,7 +52,7 @@ class SettingsProxy(object):
             else:
                 value = super(SettingsProxy, self).__getattribute__(attr)
         except AttributeError:
-            raise AttributeError('settings has no attribute "{}"'.format(attr))
+            raise AttributeError(f'settings has no attribute "{attr}"')
         return value
 
     def __setattr__(self, name: str, value: typing.Any) -> None:

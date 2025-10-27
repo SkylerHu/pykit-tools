@@ -5,16 +5,14 @@ import subprocess
 import threading
 
 
-logger = logging.getLogger("pykit_tools.cmd")
-
-
-def exec_command(command: str, timeout: int = 60) -> tuple[int, str, str]:
+def exec_command(command: str, timeout: int = 60, logger_name: str = "pykit_tools.cmd") -> tuple[int, str, str]:
     """
     执行shell命令
 
     Args:
         command: 要执行的命令
         timeout: 超时时间，单位秒(s)
+        logger_name: 日志名称
 
     Returns:
         code 系统执行返回，等于0表示成功
@@ -34,12 +32,12 @@ def exec_command(command: str, timeout: int = 60) -> tuple[int, str, str]:
         try:
             stdout = b_stdout.decode("utf-8", "strict") if b_stdout else ""
         except Exception as e:
-            logger.exception(f"{_log_cmd} decode stdout error: {e}")
+            logging.getLogger(logger_name).exception(f"{_log_cmd} decode stdout error: {e}")
             stdout = str(e)
         try:
             stderr = b_stderr.decode("utf-8", "strict") if b_stderr else ""
         except Exception as e:
-            logger.exception(f"{_log_cmd} decode stderr error: {e}")
+            logging.getLogger(logger_name).exception(f"{_log_cmd} decode stderr error: {e}")
             stderr = str(e)
     finally:
         my_timer.cancel()
@@ -49,8 +47,8 @@ def exec_command(command: str, timeout: int = 60) -> tuple[int, str, str]:
     _msg = f"{_log_cmd} code={code}"
     if code != 0:
         _msg = f"{_msg}\nstderr: {stderr}"
-        logger.error(_msg)
+        logging.getLogger(logger_name).error(_msg)
     else:
-        logger.info(_msg)
+        logging.getLogger(logger_name).info(_msg)
 
     return code, stdout, stderr

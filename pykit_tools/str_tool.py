@@ -24,8 +24,8 @@ def compute_md5(*args: typing.Any, **kwargs: typing.Any) -> str:
         else:
             input_str = str(args[0])
     else:
-        _info = ["{}:{}".format(i, arg) for i, arg in enumerate(args)]
-        _info.extend(["{}:{}".format(k, v) for k, v in kwargs.items()])
+        _info = [f"{i}:{arg}" for i, arg in enumerate(args)]
+        _info.extend([f"{k}:{v}" for k, v in kwargs.items()])
         input_str = "&#".join(_info)
     hl = hashlib.md5()
     hl.update(input_str.encode(encoding="utf-8"))

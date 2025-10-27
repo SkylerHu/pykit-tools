@@ -11,9 +11,6 @@ import pykit_tools
 from pykit_tools import str_tool, utils
 
 
-error_logger = logging.getLogger("pykit_tools.error")
-
-
 _g_cache_client: typing.Any = None
 
 
@@ -63,9 +60,12 @@ def method_deco_cache(
     cannot_cache: typing.Union[list, tuple] = (None, False),
     cache_client: typing.Any = None,
     cache_max_length: int = 33554432,
+    logger_name: str = "pykit_tools.error",
 ) -> typing.Callable:
     """
     `装饰器` 方法缓存结果, 只能缓存json序列化的数据类型
+
+    注意：若是在类的实例方法上使用，需要注意 self 参数的影响，可设置key或者将类单例后使用
 
     Args:
         func: 可以在放在参数添加 scene=CacheScene.DEGRADED.value,可以强制进行刷新
@@ -80,6 +80,7 @@ def method_deco_cache(
         cache_max_length: 序列化后缓存的字符串最大长度限制，
             此处设置最大缓存 32M = 32 * 1024 * 1024
             若是redis, A String value can be at max 512 Megabytes in length.
+        logger_name: 日志名称
 
     Returns:
         function
@@ -95,6 +96,7 @@ def method_deco_cache(
             cannot_cache=cannot_cache,
             cache_client=cache_client,
             cache_max_length=cache_max_length,
+            logger_name=logger_name,
         )
 
     fn = typing.cast(typing.Callable, func)
@@ -125,7 +127,7 @@ def method_deco_cache(
                 data = json.loads(value)
                 has_cache = True
         except Exception:
-            error_logger.exception("load cache_data error key={}".format(_key))
+            logging.getLogger(logger_name).exception(f"load cache_data error key={_key}")
         return has_cache, data
 
     def __allow_value_cache(value: typing.Any) -> bool:
@@ -146,17 +148,16 @@ def method_deco_cache(
         # 内置参数，force缓存
         _scene = kwargs.pop("scene", scene)
         if _scene not in CacheScene:
-            raise TypeError("scene={} not supported".format(scene))
+            raise TypeError(f"scene={scene} not supported")
 
         _client = __get_cache_client()
         if key:
             _key = key(*args, **kwargs) if callable(key) else key
         else:
             location = utils.get_caller_location(fn)
-            _key = "method:{}:{}".format(fn.__name__, str_tool.compute_md5(location, *args, **kwargs))
-        # else:
-        #     _key = "method:{}".format(str_tool.compute_md5(*args, **kwargs))
+            _key = f"method:{fn.__name__}:{str_tool.compute_md5(location, *args, **kwargs)}"
 
+        # 可传递 skip 不读取缓存
         if _scene in (CacheScene.DEFAULT.value,):
             # 直接从缓存里获取结果
             has_cache, data = __load_cache_data(_client, _key)
@@ -182,11 +183,11 @@ def method_deco_cache(
         try:
             _cache_str = json.dumps(ret, separators=(",", ":"))
             if len(_cache_str) > cache_max_length:
-                error_logger.error("Cache too long, key={} limit is {}".format(_key, cache_max_length))
+                logging.getLogger(logger_name).error(f"Cache too long, key={_key} limit is {cache_max_length}")
             else:
                 _client.set(_key, _cache_str, timeout)
         except Exception:
-            error_logger.exception("set cache_data error key={} ret={}".format(_key, ret))
+            logging.getLogger(logger_name).exception(f"set cache_data error key={_key} ret={ret}")
 
         return ret
 
@@ -217,7 +218,7 @@ def singleton_refresh_regular(cls: typing.Optional[typing.Type] = None, timeout:
         return partial(singleton_refresh_regular, timeout=timeout)
 
     if not inspect.isclass(cls):
-        raise TypeError("this decorator can only be applied to classes, not {}".format(type(cls)))
+        raise TypeError(f"this decorator can only be applied to classes, not {type(cls)}")
 
     _cls = typing.cast(typing.Type, cls)
 

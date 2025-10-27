@@ -36,7 +36,7 @@ def get_caller_location(caller: typing.Callable) -> str:
         路径字符串
 
     """
-    location = "{}.{}".format(caller.__module__, caller.__qualname__)
+    location = f"{caller.__module__}.{caller.__qualname__}"
     return location
 
 
