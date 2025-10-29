@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
+import typing
 import logging
 import subprocess
 import threading
 
 
-def exec_command(command: str, timeout: int = 60, logger_name: str = "pykit_tools.cmd") -> tuple[int, str, str]:
+def exec_command(command: str, timeout: int = 60, logger_name: str = "pykit_tools.cmd") -> typing.Tuple[int, str, str]:
     """
     执行shell命令
 

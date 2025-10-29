@@ -1,5 +1,8 @@
 # Release Notes
 
+## 1.1.1
+- chore: 调整typing声明兼容支持python3.6
+
 ## 1.1.0
 - feat: 调整函数可以通过参数传递name名称使用logger
     - 涉及函数有：`exec_command`/`method_deco_cache`/`handle_exception`/`time_record`

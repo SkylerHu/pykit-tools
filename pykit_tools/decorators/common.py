@@ -14,7 +14,7 @@ def handle_exception(
     func: typing.Optional[typing.Callable] = None,
     default: typing.Any = False,
     is_raise: bool = False,
-    retry_for: typing.Union[typing.Type, tuple] = Exception,
+    retry_for: typing.Union[typing.Type, typing.Tuple] = Exception,
     max_retries: int = 1,
     retry_delay: int = 0,
     retry_jitter: bool = True,

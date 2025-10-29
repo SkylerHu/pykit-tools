@@ -1,0 +1,39 @@
+name: test for py36
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+  workflow_dispatch:
+
+
+jobs:
+
+  build:
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.6
+
+    steps:
+      - uses: actions/checkout@v4
+
+
+      - name: Install tox and any other packages
+        run: pip install tox coveralls
+
+      - name: Run tox targets for python3.6
+        run:
+          for e in `tox -l | grep "py36-"`; do tox -e $e; done

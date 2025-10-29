@@ -6,7 +6,7 @@ import importlib
 
 
 __all__ = ["settings", "VERSION"]
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import typing
 
