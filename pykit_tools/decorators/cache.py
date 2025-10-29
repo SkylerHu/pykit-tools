@@ -167,13 +167,13 @@ def method_deco_cache(
 
         try:
             ret = fn(*args, **kwargs)
-        except Exception as e:
+        except Exception:
             if _scene == CacheScene.DEGRADED.value:
                 # 降级处理
                 has_cache, data = __load_cache_data(_client, _key)
                 if has_cache and __allow_value_cache(data):
                     return data
-            raise e
+            raise
 
         if not __allow_value_cache(ret):
             # 不需要缓存，直接返回
