@@ -57,7 +57,7 @@ def method_deco_cache(
     key: typing.Optional[typing.Union[str, typing.Callable]] = None,
     timeout: int = 60,
     scene: str = CacheScene.DEFAULT.value,
-    cannot_cache: typing.Union[list, tuple] = (None, False),
+    cannot_cache: typing.Union[typing.List, typing.Tuple] = (None, False),
     cache_client: typing.Any = None,
     cache_max_length: int = 33554432,
     logger_name: str = "pykit_tools.error",
@@ -119,7 +119,7 @@ def method_deco_cache(
             _client = _inner_client
         return _client
 
-    def __load_cache_data(_client: typing.Any, _key: str) -> tuple[bool, typing.Any]:
+    def __load_cache_data(_client: typing.Any, _key: str) -> typing.Tuple[bool, typing.Any]:
         has_cache, data = False, None
         try:
             value = _client.get(_key)

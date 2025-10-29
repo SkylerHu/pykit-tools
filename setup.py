@@ -41,7 +41,7 @@ setup(
             "redis>=2.10.3",
         ],
     },
-    python_requires=">=3.9",
+    python_requires=">=3.6",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

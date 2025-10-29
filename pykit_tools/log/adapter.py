@@ -23,7 +23,7 @@ class LoggerFormatAdapter(logging.LoggerAdapter):
         self,
         logger: logging.Logger,
         extra: dict,
-        fields: typing.Optional[typing.Union[list[str], tuple[str]]] = None,
+        fields: typing.Optional[typing.Union[typing.List[str], typing.Tuple[str]]] = None,
         delimiter: str = " ",
         fmt: str = "{}",
     ) -> None:
@@ -45,7 +45,7 @@ class LoggerFormatAdapter(logging.LoggerAdapter):
         self.fields = fields
         self.fmt: str = fmt
 
-    def process(self, msg: dict, kwargs: typing.Any) -> tuple[str, dict]:
+    def process(self, msg: typing.Dict, kwargs: typing.Any) -> typing.Tuple[str, dict]:
         """
         覆写 `logging.LoggerAdapter.process` 处理自定义格式化日志信息
 
@@ -60,7 +60,7 @@ class LoggerFormatAdapter(logging.LoggerAdapter):
         """
         if not isinstance(msg, dict):
             raise TypeError(f"msg={msg}, LoggerFormatAdapter process msg must be a dict")
-        extra: dict = {}
+        extra: typing.Dict = {}
         if self.extra:
             extra.update(self.extra)
         if kwargs.get("extra"):
@@ -82,7 +82,10 @@ class LoggerFormatAdapter(logging.LoggerAdapter):
 
 
 def get_format_logger(
-    name: str, fields: typing.Union[list, tuple], delimiter: str = " ", extra: typing.Optional[dict] = None
+    name: str,
+    fields: typing.Union[typing.List, typing.Tuple],
+    delimiter: str = " ",
+    extra: typing.Optional[typing.Dict] = None,
 ) -> LoggerFormatAdapter:
     """
     根据 LoggerFormatAdapter 获取 logger
