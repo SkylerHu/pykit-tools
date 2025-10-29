@@ -1,7 +1,7 @@
 # Release Notes
 
 ## 1.2.0
-- feat: 新增函数 `requests_logger` 用于记录requests的请求详细
+- feat: 新增函数 `requests_logger` 用于记录requests的请求详情
 
 ## 1.1.1
 - chore: 调整typing声明兼容支持python3.6
