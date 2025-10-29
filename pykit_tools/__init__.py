@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding=utf-8
 import os
+import typing
 import traceback
 import importlib
 
 
 __all__ = ["settings", "VERSION"]
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
-import typing
 
 VERSION = __version__
 

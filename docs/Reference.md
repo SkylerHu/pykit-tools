@@ -13,6 +13,11 @@
             - method_deco_cache
             - singleton_refresh_regular
 
+::: decorators.req_utils
+    options:
+        members:
+            - requests_logger
+
 ## 装饰器相关
 ::: decorators.cache.CacheScene
     options:
