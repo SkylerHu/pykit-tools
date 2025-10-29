@@ -30,6 +30,44 @@ def requests_logger(
     Returns:
         function:
 
+    示例：
+    ```python
+    import typing
+    import requests
+    from pykit_tools.decorators.req_utils import requests_logger
+
+    class BaseRequest(object):
+
+        def __init__(self, default_ua: str = "", logger_name: str = "pykit_tools.requests"):
+            self.request = requests_logger(requests.request, default_ua=default_ua, logger_name=logger_name)
+
+        def get(self, url: str, **kwargs: typing.Any) -> requests.Response:
+            return self.request("GET", url, **kwargs)
+
+        def post(self, url: str, **kwargs: typing.Any) -> requests.Response:
+            return self.request("POST", url, **kwargs)
+
+        def put(self, url: str, **kwargs: typing.Any) -> requests.Response:
+            return self.request("PUT", url, **kwargs)
+
+        def delete(self, url: str, **kwargs: typing.Any) -> requests.Response:
+            return self.request("DELETE", url, **kwargs)
+
+        def patch(self, url: str, **kwargs: typing.Any) -> requests.Response:
+            return self.request("PATCH", url, **kwargs)
+
+        def head(self, url: str, **kwargs: typing.Any) -> requests.Response:
+            return self.request("HEAD", url, **kwargs)
+
+        def options(self, url: str, **kwargs: typing.Any) -> requests.Response:
+            return self.request("OPTIONS", url, **kwargs)
+
+    br = BaseRequest()
+    # 控制日志输出内容
+    br.get("https://www.baidu.com", log_request=True, log_response=False)
+    # 控制异常抛出
+    br.get("https://www.baidu.com", raise_for=Exception)
+    ```
     """
     if not callable(func):
         return partial(requests_logger, default_ua=default_ua, logger_name=logger_name)
