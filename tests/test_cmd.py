@@ -34,6 +34,18 @@ def test_exec_command(monkeypatch):
     assert "object has no attribute" in stderr
 
 
+def test_exec_command_log_cmd(monkeypatch, caplog):
+    caplog.set_level(logging.DEBUG, "pykit_tools.cmd")
+    code, stdout, stderr = exec_command("ls -al", log_cmd=True)
+    assert code == 0
+    assert stdout is not None
+    assert stderr == ""
+    assert len(caplog.records) == 1
+    assert caplog.records[0].levelname == "INFO"
+    assert "ls -al" in caplog.records[0].message
+    assert "code=0" in caplog.records[0].message
+
+
 def test_exec_command_err_max_length(monkeypatch, caplog):
     caplog.set_level(logging.DEBUG, "pykit_tools.cmd")
 

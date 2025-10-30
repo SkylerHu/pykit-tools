@@ -7,7 +7,11 @@ import threading
 
 
 def exec_command(
-    command: str, timeout: int = 60, err_max_length: int = 1024, logger_name: str = "pykit_tools.cmd"
+    command: str,
+    timeout: int = 60,
+    log_cmd: bool = False,
+    err_max_length: int = 1024,
+    logger_name: str = "pykit_tools.cmd",
 ) -> typing.Tuple[int, str, str]:
     """
     执行shell命令
@@ -15,6 +19,7 @@ def exec_command(
     Args:
         command: 要执行的命令
         timeout: 超时时间，单位秒(s)
+        log_cmd: 是否记录命令日志，默认不记录（仅在异常时记录异常日志）
         err_max_length: 错误输出最大长度，超过该长度则截断; 0表示不截断
         logger_name: 日志名称
 
@@ -57,7 +62,7 @@ def exec_command(
             log_err = stderr[:pre_idx] + "\n\t...\n" + stderr[:-pre_idx]
         _msg = f"{_msg}\n\tstderr: {log_err}"
         logging.getLogger(logger_name).error(_msg)
-    else:
+    elif log_cmd:
         logging.getLogger(logger_name).info(_msg)
 
     return code, stdout, stderr

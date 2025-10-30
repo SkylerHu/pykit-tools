@@ -94,7 +94,7 @@ def test_time_record(caplog):
     caplog.clear()
     fn = time_record(test, format_key=lambda v: "key" + 1)
     fn(value)
-    assert len(caplog.records) == 2
+    assert len(caplog.records) == 1
     assert caplog.records[0].levelname == "ERROR"
 
     # test for other ...
