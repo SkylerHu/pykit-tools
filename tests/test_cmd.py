@@ -44,4 +44,4 @@ def test_exec_command_err_max_length(monkeypatch, caplog):
     _, _, stderr = exec_command("ls -al", err_max_length=16)
     assert stderr == "a" * 1024
     assert caplog.records[0].levelname == "ERROR"
-    assert "a" * 8 + "\n...\n" + "a" * 8 in caplog.records[0].message
+    assert "a" * 8 + "\n\t...\n" + "a" * 8 in caplog.records[0].message

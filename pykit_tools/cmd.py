@@ -54,8 +54,7 @@ def exec_command(
         if len(stderr) > err_max_length:
             # 截取前后一半，中间用...代替
             pre_idx = err_max_length // 2
-            after_idx = len(stderr) - pre_idx
-            log_err = stderr[:pre_idx] + "\n...\n" + stderr[after_idx:]
+            log_err = stderr[:pre_idx] + "\n\t...\n" + stderr[:-pre_idx]
         _msg = f"{_msg}\n\tstderr: {log_err}"
         logging.getLogger(logger_name).error(_msg)
     else:
