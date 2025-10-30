@@ -6,13 +6,16 @@ import subprocess
 import threading
 
 
-def exec_command(command: str, timeout: int = 60, logger_name: str = "pykit_tools.cmd") -> typing.Tuple[int, str, str]:
+def exec_command(
+    command: str, timeout: int = 60, err_max_length: int = 1024, logger_name: str = "pykit_tools.cmd"
+) -> typing.Tuple[int, str, str]:
     """
     执行shell命令
 
     Args:
         command: 要执行的命令
         timeout: 超时时间，单位秒(s)
+        err_max_length: 错误输出最大长度，超过该长度则截断; 0表示不截断
         logger_name: 日志名称
 
     Returns:
@@ -46,8 +49,14 @@ def exec_command(command: str, timeout: int = 60, logger_name: str = "pykit_tool
 
     # 记录日志
     _msg = f"{_log_cmd} code={code}"
-    if code != 0:
-        _msg = f"{_msg}\nstderr: {stderr}"
+    if code != 0 and err_max_length > 0:
+        log_err = stderr
+        if len(stderr) > err_max_length:
+            # 截取前后一半，中间用...代替
+            pre_idx = err_max_length // 2
+            after_idx = len(stderr) - pre_idx
+            log_err = stderr[:pre_idx] + "\n...\n" + stderr[after_idx:]
+        _msg = f"{_msg}\n\tstderr: {log_err}"
         logging.getLogger(logger_name).error(_msg)
     else:
         logging.getLogger(logger_name).info(_msg)
