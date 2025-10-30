@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.2.2
+- fix: `exec_command` 新增 `popen_kwargs` 参数
+    - 用于透传 subprocess.Popen 的参数
+
 ## 1.2.1
 - fix: `exec_command` 新增参数
     - `err_max_length=1024` 限制日志错误输出内容的长度
