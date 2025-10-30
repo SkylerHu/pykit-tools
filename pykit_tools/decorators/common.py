@@ -7,7 +7,7 @@ import typing
 from functools import wraps, partial
 
 from pykit_tools.utils import get_caller_location
-from pykit_tools.log.adapter import timer_common_logger
+from pykit_tools.log.adapter import get_format_logger
 
 
 def handle_exception(
@@ -120,6 +120,8 @@ def time_record(
 
     fn = typing.cast(typing.Callable, func)
 
+    logger = get_format_logger(logger_name, ["location", "key", "cost", "ret"])
+
     @wraps(fn)
     def _wrapper(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
         _start = time.monotonic()
@@ -145,10 +147,9 @@ def time_record(
 
                 if callable(format_ret):
                     _ret = format_ret(ret)
+                logger.info(dict(location=location, key=key, cost=cost, ret=_ret))
             except Exception as e:
-                logging.getLogger(logger_name).exception(f"{location} {str(e)}\nargs={args}\nkwargs={kwargs}")
-
-            timer_common_logger.info(dict(location=location, key=key, cost=cost, ret=_ret))
+                logger.exception(dict(location=location, key=key, cost=cost, ret=str(e)))
 
         # 返回正确结果
         return ret

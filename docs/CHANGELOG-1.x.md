@@ -1,5 +1,12 @@
 # Release Notes
 
+## 1.2.1
+- fix: `exec_command` 新增参数
+    - `err_max_length=1024` 限制日志错误输出内容的长度
+    - `log_cmd` 是否记录命令日志，默认不记录
+- fix: 移除 `log/adapter.py` 中定义初始化的logger
+    - timer_common_logger / http_common_logger / loop_common_logger
+
 ## 1.2.0
 - feat: 新增函数 `requests_logger` 用于记录requests的请求详情
 

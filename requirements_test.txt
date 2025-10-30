@@ -1,5 +1,5 @@
 # test 不限制版本，不同python版本就安装最高版本
-requests
+requests==2.32.5
 pytest
 pytest-env
 pytest-cov

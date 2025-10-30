@@ -108,25 +108,3 @@ def get_format_logger(
         _extra.update(extra)
     logger = LoggerFormatAdapter(_logger, _extra, fields=fields, delimiter=delimiter)
     return logger
-
-
-# eg: timer_logger.info(dict(key='my-key', cost=3, ret=True))
-timer_common_logger = get_format_logger("pykit_tools.timer", ["location", "key", "cost", "ret"])
-http_common_logger = get_format_logger(
-    "pykit_tools.http",
-    [
-        "remote_addr",
-        "method",
-        "uri",
-        "query",
-        "referer",
-        "xff",
-        "agent",
-        "user",
-        "content_length",
-        "status",
-        "cost",
-    ],
-    delimiter="\t\t",
-)
-loop_common_logger = get_format_logger("pykit_tools.loop", ["queue", "action", "key", "wait", "cost", "ret"])
