@@ -34,6 +34,7 @@ def exec_command(
     _log_cmd = f"[timeout {timeout} {command}]"
 
     kwargs: typing.Dict = {
+        "shell": True,
         "encoding": "utf-8",
         "universal_newlines": True,
     }
@@ -41,7 +42,6 @@ def exec_command(
         kwargs.update(popen_kwargs)
     kwargs.update(
         {
-            "shell": True,
             "stdout": subprocess.PIPE,
             "stderr": subprocess.PIPE,
         }
