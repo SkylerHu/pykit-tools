@@ -1,5 +1,11 @@
 # Release Notes
 
+## 1.2.3
+- fix: 调整 `requests_logger`
+    - 新增 `legal_codes` 参数，在`log_response=False`情况下可通过该参数控制记录响应内容
+    - 新增 `format_resp` 参数，处理 response 输出日志，默认取  response.text
+    - 请求后，处理 `response.encoding = "utf-8"`
+
 ## 1.2.2
 - fix: `exec_command` 新增 `popen_kwargs` 参数
     - 用于透传 subprocess.Popen 的参数

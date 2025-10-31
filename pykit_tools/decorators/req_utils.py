@@ -19,7 +19,9 @@ def requests_logger(
     扩展 requests 请求函数可传递的参数：
 
     - log_request: 是否记录请求的参数，默认True
-    - log_response: 是否记录响应内容，默认True
+    - log_response: 是否记录响应内容，默认True，设置为False后可通过参数legal_codes控制记录响应内容
+    - legal_codes: 合法的响应状态码列表/元组，仅当响应状态码不在列表/元组中才记录响应内容，默认None记录所有响应内容
+    - format_resp: 格式化响应内容的函数，用于格式化响应内容，默认None使用response.text
     - raise_for: 需要抛出的异常类型/异常元组，仅当异常匹配才抛出异常，默认None不抛出异常
 
     Args:
@@ -64,7 +66,7 @@ def requests_logger(
 
     br = BaseRequest()
     # 控制日志输出内容
-    br.get("https://www.baidu.com", log_request=True, log_response=False)
+    br.get("https://www.baidu.com", log_request=False, log_response=True)
     # 控制异常抛出
     br.get("https://www.baidu.com", raise_for=Exception)
     ```
@@ -81,6 +83,8 @@ def requests_logger(
         url: str,
         log_request: bool = True,
         log_response: bool = True,
+        legal_codes: typing.Optional[typing.Union[typing.List, typing.Tuple]] = None,
+        format_resp: typing.Optional[typing.Callable] = None,
         raise_for: typing.Optional[typing.Union[typing.Type, typing.Tuple]] = None,
         timeout: int = 10,
         headers: typing.Optional[typing.Dict] = None,
@@ -90,7 +94,9 @@ def requests_logger(
         if default_ua:
             # 设置默认的 User-Agent
             headers = headers or {}
-            headers["User-Agent"] = default_ua
+            _keys = [k.lower() for k in headers.keys()]
+            if "user-agent" not in _keys:
+                headers["User-Agent"] = default_ua
 
         req_msg = ""
         if log_request:
@@ -113,11 +119,12 @@ def requests_logger(
         _start = time.monotonic()
         try:
             response = fn(method, url, headers=headers, timeout=timeout, **kwargs)
+            response.encoding = "utf-8"
             code = response.status_code
             length = len(response.content)
-            if log_response:
+            if log_response or (legal_codes and code not in legal_codes):
                 try:
-                    resp_msg = response.text
+                    resp_msg = format_resp(response) if callable(format_resp) else response.text
                 except Exception as _e:
                     resp_msg = f"parse response.text error]: {_e}"
         except Exception as e:

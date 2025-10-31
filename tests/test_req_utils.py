@@ -112,6 +112,85 @@ class TestRequestsLogger:
 
         mock_request("GET", "http://example.com", headers={"X-Custom": "value"})
 
+    def test_default_ua_with_existing_user_agent_lowercase(self, caplog):
+        """测试 headers 中已存在 user-agent (小写) 时不添加默认 UA"""
+        caplog.set_level(logging.INFO, "pykit_tools.requests")
+        default_ua = "MyBot/1.0"
+        existing_ua = "ExistingBot/1.0"
+
+        @requests_logger(default_ua=default_ua)
+        def mock_request(method, url, headers=None, **kwargs):
+            assert headers is not None
+            # 应该保留原有的 user-agent，不添加默认的
+            assert headers["user-agent"] == existing_ua
+            assert headers.get("User-Agent") != default_ua
+            response = Mock()
+            response.status_code = 200
+            response.content = b"test"
+            response.text = "test"
+            return response
+
+        mock_request("GET", "http://example.com", headers={"user-agent": existing_ua})
+
+    def test_default_ua_with_existing_user_agent_uppercase(self, caplog):
+        """测试 headers 中已存在 User-Agent (首字母大写) 时不添加默认 UA"""
+        caplog.set_level(logging.INFO, "pykit_tools.requests")
+        default_ua = "MyBot/1.0"
+        existing_ua = "ExistingBot/1.0"
+
+        @requests_logger(default_ua=default_ua)
+        def mock_request(method, url, headers=None, **kwargs):
+            assert headers is not None
+            # 应该保留原有的 User-Agent，不添加默认的
+            assert headers["User-Agent"] == existing_ua
+            response = Mock()
+            response.status_code = 200
+            response.content = b"test"
+            response.text = "test"
+            return response
+
+        mock_request("GET", "http://example.com", headers={"User-Agent": existing_ua})
+
+    def test_default_ua_with_existing_user_agent_all_uppercase(self, caplog):
+        """测试 headers 中已存在 USER-AGENT (全大写) 时不添加默认 UA"""
+        caplog.set_level(logging.INFO, "pykit_tools.requests")
+        default_ua = "MyBot/1.0"
+        existing_ua = "ExistingBot/1.0"
+
+        @requests_logger(default_ua=default_ua)
+        def mock_request(method, url, headers=None, **kwargs):
+            assert headers is not None
+            # 应该保留原有的 USER-AGENT，不添加默认的
+            assert headers["USER-AGENT"] == existing_ua
+            assert headers.get("User-Agent") != default_ua
+            response = Mock()
+            response.status_code = 200
+            response.content = b"test"
+            response.text = "test"
+            return response
+
+        mock_request("GET", "http://example.com", headers={"USER-AGENT": existing_ua})
+
+    def test_default_ua_with_existing_user_agent_mixed_case(self, caplog):
+        """测试 headers 中已存在 User-AGeNt (混合大小写) 时不添加默认 UA"""
+        caplog.set_level(logging.INFO, "pykit_tools.requests")
+        default_ua = "MyBot/1.0"
+        existing_ua = "ExistingBot/1.0"
+
+        @requests_logger(default_ua=default_ua)
+        def mock_request(method, url, headers=None, **kwargs):
+            assert headers is not None
+            # 应该保留原有的 User-AGeNt，不添加默认的
+            assert headers["User-AGeNt"] == existing_ua
+            assert headers.get("User-Agent") != default_ua
+            response = Mock()
+            response.status_code = 200
+            response.content = b"test"
+            response.text = "test"
+            return response
+
+        mock_request("GET", "http://example.com", headers={"User-AGeNt": existing_ua})
+
     def test_default_ua_empty_no_headers(self, caplog):
         """测试 default_ua 为空时，没有 headers 的情况"""
         caplog.set_level(logging.INFO, "pykit_tools.requests")
@@ -263,6 +342,137 @@ class TestRequestsLogger:
             return response
 
         mock_request("GET", "http://example.com", log_response=False)
+        assert len(caplog.records) == 1
+        assert "response:" not in caplog.records[0].message
+
+    def test_log_response_false_with_legal_codes_in_list(self, caplog):
+        """测试 log_response=False + legal_codes 存在 + 状态码在 legal_codes 中时不记录响应"""
+        caplog.set_level(logging.INFO, "pykit_tools.requests")
+
+        @requests_logger
+        def mock_request(method, url, **kwargs):
+            response = Mock()
+            response.status_code = 200
+            response.content = b"test"
+            response.text = "test response"
+            return response
+
+        mock_request("GET", "http://example.com", log_response=False, legal_codes=[200, 201, 204])
+        assert len(caplog.records) == 1
+        assert "response:" not in caplog.records[0].message
+
+    def test_log_response_false_with_legal_codes_not_in_list(self, caplog):
+        """测试 log_response=False + legal_codes 存在 + 状态码不在 legal_codes 中时记录响应"""
+        caplog.set_level(logging.INFO, "pykit_tools.requests")
+
+        @requests_logger
+        def mock_request(method, url, **kwargs):
+            response = Mock()
+            response.status_code = 404
+            response.content = b"not found"
+            response.text = "not found"
+            return response
+
+        mock_request("GET", "http://example.com", log_response=False, legal_codes=[200, 201, 204])
+        assert len(caplog.records) == 1
+        assert "response:" in caplog.records[0].message
+        assert "not found" in caplog.records[0].message
+
+    def test_log_response_false_with_legal_codes_tuple(self, caplog):
+        """测试 log_response=False + legal_codes 为元组 + 状态码不在 legal_codes 中时记录响应"""
+        caplog.set_level(logging.INFO, "pykit_tools.requests")
+
+        @requests_logger
+        def mock_request(method, url, **kwargs):
+            response = Mock()
+            response.status_code = 500
+            response.content = b"server error"
+            response.text = "server error"
+            return response
+
+        mock_request("GET", "http://example.com", log_response=False, legal_codes=(200, 201, 204))
+        assert len(caplog.records) == 1
+        assert "response:" in caplog.records[0].message
+        assert "server error" in caplog.records[0].message
+
+    def test_log_response_false_with_legal_codes_and_format_resp(self, caplog):
+        """测试 log_response=False + legal_codes 存在 + 状态码不在 legal_codes 中 + format_resp 可调用时使用 format_resp"""
+        caplog.set_level(logging.INFO, "pykit_tools.requests")
+
+        def custom_format(resp):
+            return f"Formatted: {resp.status_code} - {resp.text}"
+
+        @requests_logger
+        def mock_request(method, url, **kwargs):
+            response = Mock()
+            response.status_code = 500
+            response.content = b"error"
+            response.text = "error"
+            return response
+
+        mock_request("GET", "http://example.com", log_response=False, legal_codes=[200, 201], format_resp=custom_format)
+        assert len(caplog.records) == 1
+        assert "response:" in caplog.records[0].message
+        assert "Formatted: 500 - error" in caplog.records[0].message
+
+    def test_log_response_false_with_legal_codes_and_format_resp_non_callable(self, caplog):
+        """测试 log_response=False + legal_codes 存在 + 状态码不在 legal_codes 中 + format_resp 不可调用时使用 response.text"""
+        caplog.set_level(logging.INFO, "pykit_tools.requests")
+
+        @requests_logger
+        def mock_request(method, url, **kwargs):
+            response = Mock()
+            response.status_code = 500
+            response.content = b"error"
+            response.text = "error response"
+            return response
+
+        mock_request(
+            "GET",
+            "http://example.com",
+            log_response=False,
+            legal_codes=[200, 201],
+            format_resp="not a function",  # 不可调用
+        )
+        assert len(caplog.records) == 1
+        assert "response:" in caplog.records[0].message
+        assert "error response" in caplog.records[0].message
+
+    def test_log_response_false_with_legal_codes_and_format_resp_exception(self, caplog):
+        """测试 log_response=False + legal_codes 存在 + 状态码不在 legal_codes 中 + format_resp 抛出异常"""
+        caplog.set_level(logging.INFO, "pykit_tools.requests")
+
+        def format_resp_with_error(resp):
+            raise ValueError("format error")
+
+        @requests_logger
+        def mock_request(method, url, **kwargs):
+            response = Mock()
+            response.status_code = 500
+            response.content = b"error"
+            response.text = "error"
+            return response
+
+        mock_request(
+            "GET", "http://example.com", log_response=False, legal_codes=[200, 201], format_resp=format_resp_with_error
+        )
+        assert len(caplog.records) == 1
+        assert "response:" in caplog.records[0].message
+        assert "parse response.text error" in caplog.records[0].message
+
+    def test_log_response_false_with_legal_codes_none(self, caplog):
+        """测试 log_response=False + legal_codes=None 时不记录响应"""
+        caplog.set_level(logging.INFO, "pykit_tools.requests")
+
+        @requests_logger
+        def mock_request(method, url, **kwargs):
+            response = Mock()
+            response.status_code = 404
+            response.content = b"not found"
+            response.text = "not found"
+            return response
+
+        mock_request("GET", "http://example.com", log_response=False, legal_codes=None)
         assert len(caplog.records) == 1
         assert "response:" not in caplog.records[0].message
 
