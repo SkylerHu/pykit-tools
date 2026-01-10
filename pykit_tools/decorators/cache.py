@@ -61,6 +61,7 @@ def method_deco_cache(
     cache_client: typing.Any = None,
     cache_max_length: int = 33554432,
     logger_name: str = "pykit_tools.error",
+    logger_level: int = logging.ERROR,
 ) -> typing.Callable:
     """
     `装饰器` 方法缓存结果, 只能缓存json序列化的数据类型
@@ -81,7 +82,7 @@ def method_deco_cache(
             此处设置最大缓存 32M = 32 * 1024 * 1024
             若是redis, A String value can be at max 512 Megabytes in length.
         logger_name: 日志名称
-
+        logger_level: 异常时设置日志的级别
     Returns:
         function
 
@@ -97,6 +98,7 @@ def method_deco_cache(
             cache_client=cache_client,
             cache_max_length=cache_max_length,
             logger_name=logger_name,
+            logger_level=logger_level,
         )
 
     fn = typing.cast(typing.Callable, func)
@@ -127,7 +129,7 @@ def method_deco_cache(
                 data = json.loads(value)
                 has_cache = True
         except Exception:
-            logging.getLogger(logger_name).exception(f"load cache_data error key={_key}")
+            logging.getLogger(logger_name).log(logger_level, f"load cache_data error key={_key}", exc_info=True)
         return has_cache, data
 
     def __allow_value_cache(value: typing.Any) -> bool:
@@ -183,11 +185,15 @@ def method_deco_cache(
         try:
             _cache_str = json.dumps(ret, separators=(",", ":"))
             if len(_cache_str) > cache_max_length:
-                logging.getLogger(logger_name).error(f"Cache too long, key={_key} limit is {cache_max_length}")
+                logging.getLogger(logger_name).log(
+                    logger_level, f"Cache too long, key={_key} limit is {cache_max_length}"
+                )
             else:
                 _client.set(_key, _cache_str, timeout)
         except Exception:
-            logging.getLogger(logger_name).exception(f"set cache_data error key={_key} ret={ret}")
+            logging.getLogger(logger_name).log(
+                logger_level, f"set cache_data error key={_key} ret={ret}", exc_info=True
+            )
 
         return ret
 

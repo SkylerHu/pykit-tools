@@ -12,6 +12,7 @@ def requests_logger(
     func: typing.Optional[typing.Callable] = None,
     default_ua: str = "",
     logger_name: str = "pykit_tools.requests",
+    logger_level: int = logging.ERROR,
 ) -> typing.Callable:
     """
     `装饰器` 应用于对 requests 库的请求进行日志记录.
@@ -28,6 +29,7 @@ def requests_logger(
         func:
         default_ua: 默认的 User-Agent
         logger_name: 日志名称，仅记录异常时使用
+        logger_level: 异常时设置日志的级别
 
     Returns:
         function:
@@ -72,7 +74,7 @@ def requests_logger(
     ```
     """
     if not callable(func):
-        return partial(requests_logger, default_ua=default_ua, logger_name=logger_name)
+        return partial(requests_logger, default_ua=default_ua, logger_name=logger_name, logger_level=logger_level)
 
     fn = typing.cast(typing.Callable, func)
     logger = logging.getLogger(logger_name)
@@ -143,7 +145,7 @@ def requests_logger(
                 msg = f"{msg}\n\tresponse: {resp_msg}"
 
             if err:
-                logger.exception(msg)
+                logger.log(logger_level, msg, exc_info=True)
             else:
                 logger.info(msg)
 

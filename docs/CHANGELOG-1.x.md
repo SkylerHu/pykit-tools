@@ -1,5 +1,11 @@
 # Release Notes
 
+## 1.2.4
+- fix: 调整 `exec_command` 使用原生的 `subprocess.run` 超时参数设置
+    - 解决 threading.Timer 超时带来的僵尸进程问题
+- feat: 各个装饰器有logger_name参数的同时，增加 `logger_level` 参数
+    - 在异常时使用的日志级别，因Sentry默认会上报ERROR日志，某些场景可以设置为`WARNING`忽略上报
+
 ## 1.2.3
 - fix: 调整 `requests_logger`
     - 新增 `legal_codes` 参数，在`log_response=False`情况下可通过该参数控制记录响应内容
