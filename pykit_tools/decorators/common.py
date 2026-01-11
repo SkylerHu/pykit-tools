@@ -20,6 +20,7 @@ def handle_exception(
     retry_jitter: bool = True,
     log_args: bool = True,
     logger_name: str = "pykit_tools.error",
+    logger_level: int = logging.ERROR,
 ) -> typing.Callable:
     """
     `装饰器` 用于捕获函数异常，并在出现异常的时候返回默认值
@@ -35,6 +36,7 @@ def handle_exception(
                 若设置为true, 随机范围值在[0, retry_delay]之间，随机值为真实delay时间
         log_args: 异常时将参数输出到日志
         logger_name: 日志名称，仅记录异常时使用
+        logger_level: 异常时设置日志的级别
 
     Returns:
         function
@@ -51,6 +53,7 @@ def handle_exception(
             retry_jitter=retry_jitter,
             log_args=log_args,
             logger_name=logger_name,
+            logger_level=logger_level,
         )
 
     fn = typing.cast(typing.Callable, func)
@@ -72,7 +75,7 @@ def handle_exception(
                 _msg = "%s retry=%d %s" % (location, count, str(e))
                 if log_args:
                     _msg = "%s\nargs: %s\nkwargs: %s" % (_msg, args, kwargs)
-                logging.getLogger(logger_name).exception(_msg)
+                logging.getLogger(logger_name).log(logger_level, _msg, exc_info=True)
                 if isinstance(e, retry_for):
                     # 可以记录重试
                     if retry_delay > 0:
@@ -101,6 +104,7 @@ def time_record(
     format_key: typing.Optional[typing.Callable] = None,
     format_ret: typing.Optional[typing.Callable] = None,
     logger_name: str = "pykit_tools.error",
+    logger_level: int = logging.ERROR,
 ) -> typing.Callable:
     """
     `装饰器` 函数耗时统计
@@ -110,13 +114,20 @@ def time_record(
         format_key: 根据函数输入的参数，格式化日志记录的唯一标记key
         format_ret: 根据函数返回的结果，格式化日志记录的结果ret
         logger_name: 日志名称，仅记录异常时使用
+        logger_level: 异常时设置日志的级别
 
     Returns:
         function
 
     """
     if not callable(func):
-        return partial(time_record, format_key=format_key, format_ret=format_ret, logger_name=logger_name)
+        return partial(
+            time_record,
+            format_key=format_key,
+            format_ret=format_ret,
+            logger_name=logger_name,
+            logger_level=logger_level,
+        )
 
     fn = typing.cast(typing.Callable, func)
 
@@ -149,7 +160,7 @@ def time_record(
                     _ret = format_ret(ret)
                 logger.info(dict(location=location, key=key, cost=cost, ret=_ret))
             except Exception as e:
-                logger.exception(dict(location=location, key=key, cost=cost, ret=str(e)))
+                logger.log(logger_level, dict(location=location, key=key, cost=cost, ret=str(e)), exc_info=True)
 
         # 返回正确结果
         return ret

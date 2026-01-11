@@ -3,7 +3,6 @@
 import typing
 import logging
 import subprocess
-import threading
 
 
 def exec_command(
@@ -12,6 +11,7 @@ def exec_command(
     log_cmd: bool = False,
     err_max_length: int = 1024,
     logger_name: str = "pykit_tools.cmd",
+    logger_level: int = logging.ERROR,
     popen_kwargs: typing.Optional[typing.Dict] = None,
 ) -> typing.Tuple[int, str, str]:
     """
@@ -23,6 +23,7 @@ def exec_command(
         log_cmd: 是否记录命令日志，默认不记录（仅在异常时记录异常日志）
         err_max_length: 错误输出最大长度，超过该长度则截断; 0表示不截断
         logger_name: 日志名称
+        logger_level: 异常时设置日志的级别
         popen_kwargs: 透传 subprocess.Popen 的参数
 
     Returns:
@@ -34,28 +35,22 @@ def exec_command(
     _log_cmd = f"[timeout {timeout} {command}]"
 
     kwargs: typing.Dict = {
+        "text": True,
         "shell": True,
         "encoding": "utf-8",
         "universal_newlines": True,
     }
     if popen_kwargs:
         kwargs.update(popen_kwargs)
-    kwargs.update(
-        {
-            "stdout": subprocess.PIPE,
-            "stderr": subprocess.PIPE,
-        }
-    )
-    child = subprocess.Popen(command, **kwargs)
-    # shell timeout 不能和 Python Timer结合，timeout是fork子进程去执行, Timer kill掉timeout会产生defunct僵尸进程
-    my_timer = threading.Timer(timeout, lambda process: process.kill(), [child])
+
     stdout, stderr = "", ""
     try:
-        my_timer.start()
-        stdout, stderr = child.communicate()
-    finally:
-        my_timer.cancel()
-    code = child.returncode
+        result: subprocess.CompletedProcess = subprocess.run(command, capture_output=True, timeout=timeout, **kwargs)
+        code = result.returncode
+        stdout = result.stdout
+        stderr = result.stderr
+    except subprocess.TimeoutExpired:
+        code = -9
 
     # 记录日志
     _msg = f"{_log_cmd} code={code}"
@@ -66,7 +61,7 @@ def exec_command(
             pre_idx = err_max_length // 2
             log_err = stderr[:pre_idx] + "\n\t...\n" + stderr[:-pre_idx]
         _msg = f"{_msg}\n\tstderr: {log_err}"
-        logging.getLogger(logger_name).error(_msg)
+        logging.getLogger(logger_name).log(logger_level, _msg)
     elif log_cmd:
         logging.getLogger(logger_name).info(_msg)
 
