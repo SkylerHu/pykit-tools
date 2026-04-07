@@ -78,8 +78,7 @@ def handle_exception(
                 if log_args:
                     logging.getLogger(logger_name).log(
                         _level,
-                        "%s retry=%d %s\n\targs: %s\n\tkwargs: %s",
-                        location,
+                        f"{location} retry=%d %s\n\targs: %s\n\tkwargs: %s",
                         count,
                         str(e),
                         args,
@@ -89,8 +88,7 @@ def handle_exception(
                 else:
                     logging.getLogger(logger_name).log(
                         _level,
-                        "%s retry=%d %s",
-                        location,
+                        f"{location} retry=%d %s",
                         count,
                         str(e),
                         exc_info=True,
@@ -171,7 +169,7 @@ def time_record(
             ret = fn(*args, **kwargs)
         except Exception as exc:
             cost = "%.3f" % ((time.monotonic() - _start) * 1000)
-            logger.log(logger_level, "%s %s %s %s", location, key, cost, exc, exc_info=True)
+            logger.log(logger_level, f"{location} %s %s %s", key, cost, exc, exc_info=True)
             raise
         else:
             cost = "%.3f" % ((time.monotonic() - _start) * 1000)
@@ -179,9 +177,9 @@ def time_record(
             try:
                 if callable(format_ret):
                     _ret = format_ret(ret)
-                logger.info("%s %s %s %s", location, key, cost, _ret)
+                logger.info(f"{location} %s %s %s", key, cost, _ret)
             except Exception as e:
-                logger.log(logger_level, "%s %s %s %s", location, key, cost, e, exc_info=True)
+                logger.log(logger_level, f"{location} %s %s %s", key, cost, e, exc_info=True)
 
         return ret
 

@@ -41,6 +41,7 @@ def exec_command(
     if popen_kwargs:
         kwargs.update(popen_kwargs)
 
+    _name = command.split()[0]  # 命令名称
     stdout, stderr = "", ""
     try:
         result: subprocess.CompletedProcess = subprocess.run(command, capture_output=True, timeout=timeout, **kwargs)
@@ -49,7 +50,7 @@ def exec_command(
         stderr = result.stderr
     except subprocess.TimeoutExpired:
         code = -9
-        logging.getLogger(logger_name).log(logger_level, "[timeout %s %s] code=%s", timeout, command, code)
+        logging.getLogger(logger_name).log(logger_level, f"{_name} [timeout %s %s] code=%s", timeout, command, code)
     else:
         if code != 0 and err_max_length > 0:
             log_err = stderr or ""
@@ -58,9 +59,9 @@ def exec_command(
                 pre_idx = err_max_length // 2
                 log_err = log_err[:pre_idx] + "\n\t...\n" + log_err[:-pre_idx]
             logging.getLogger(logger_name).log(
-                logger_level, "[timeout %s %s] code=%s\n\tstderr: %s", timeout, command, code, log_err
+                logger_level, f"[{_name}] [timeout %s %s] code=%s\n\tstderr: %s", timeout, command, code, log_err
             )
         elif log_cmd:
-            logging.getLogger(logger_name).info("[timeout %s %s] code=%s", timeout, command, code)
+            logging.getLogger(logger_name).info(f"{_name} [timeout %s %s] code=%s", timeout, command, code)
 
     return code, stdout, stderr
