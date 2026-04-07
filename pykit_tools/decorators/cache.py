@@ -129,7 +129,7 @@ def method_deco_cache(
                 data = json.loads(value)
                 has_cache = True
         except Exception:
-            logging.getLogger(logger_name).log(logger_level, f"load cache_data error key={_key}", exc_info=True)
+            logging.getLogger(logger_name).log(logger_level, "load cache_data error key=%s", _key, exc_info=True)
         return has_cache, data
 
     def __allow_value_cache(value: typing.Any) -> bool:
@@ -186,13 +186,13 @@ def method_deco_cache(
             _cache_str = json.dumps(ret, separators=(",", ":"))
             if len(_cache_str) > cache_max_length:
                 logging.getLogger(logger_name).log(
-                    logger_level, f"Cache too long, key={_key} limit is {cache_max_length}"
+                    logger_level, "Cache too long, key=%s limit is %s", _key, cache_max_length
                 )
             else:
                 _client.set(_key, _cache_str, timeout)
         except Exception:
             logging.getLogger(logger_name).log(
-                logger_level, f"set cache_data error key={_key} ret={ret}", exc_info=True
+                logger_level, "set cache_data error key=%s ret=%s", _key, ret, exc_info=True
             )
 
         return ret

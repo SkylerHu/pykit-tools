@@ -1,5 +1,12 @@
 # Release Notes
 
+## 1.2.5
+- fix: 解决使用sentry时日志异常未能按照预期聚合的问题
+    - 调整logger输出日志使用“模板”
+    - 修复：try finally中使用日志输出异常无法正常获取异常堆栈
+- fix: `handle_exception` 增加参数`logger_pre_level`
+    - 避免重试引起多次sentry错误上报
+
 ## 1.2.4
 - fix: 调整 `exec_command` 使用原生的 `subprocess.run` 超时参数设置
     - 解决 threading.Timer 超时带来的僵尸进程问题

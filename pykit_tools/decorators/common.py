@@ -7,7 +7,6 @@ import typing
 from functools import wraps, partial
 
 from pykit_tools.utils import get_caller_location
-from pykit_tools.log.adapter import get_format_logger
 
 
 def handle_exception(
@@ -21,6 +20,7 @@ def handle_exception(
     log_args: bool = True,
     logger_name: str = "pykit_tools.error",
     logger_level: int = logging.ERROR,
+    logger_pre_level: int = logging.WARNING,
 ) -> typing.Callable:
     """
     `装饰器` 用于捕获函数异常，并在出现异常的时候返回默认值
@@ -37,6 +37,7 @@ def handle_exception(
         log_args: 异常时将参数输出到日志
         logger_name: 日志名称，仅记录异常时使用
         logger_level: 异常时设置日志的级别
+        logger_pre_level: 重试最后一次之前的日志级别，避免多次重试会有多次错误输出
 
     Returns:
         function
@@ -54,6 +55,7 @@ def handle_exception(
             log_args=log_args,
             logger_name=logger_name,
             logger_level=logger_level,
+            logger_pre_level=logger_pre_level,
         )
 
     fn = typing.cast(typing.Callable, func)
@@ -72,10 +74,27 @@ def handle_exception(
                 error = None
             except Exception as e:
                 error = e
-                _msg = "%s retry=%d %s" % (location, count, str(e))
+                _level = logger_level if count >= max_retries else logger_pre_level
                 if log_args:
-                    _msg = "%s\nargs: %s\nkwargs: %s" % (_msg, args, kwargs)
-                logging.getLogger(logger_name).log(logger_level, _msg, exc_info=True)
+                    logging.getLogger(logger_name).log(
+                        _level,
+                        "%s retry=%d %s\n\targs: %s\n\tkwargs: %s",
+                        location,
+                        count,
+                        str(e),
+                        args,
+                        kwargs,
+                        exc_info=True,
+                    )
+                else:
+                    logging.getLogger(logger_name).log(
+                        _level,
+                        "%s retry=%d %s",
+                        location,
+                        count,
+                        str(e),
+                        exc_info=True,
+                    )
                 if isinstance(e, retry_for):
                     # 可以记录重试
                     if retry_delay > 0:
@@ -131,38 +150,39 @@ def time_record(
 
     fn = typing.cast(typing.Callable, func)
 
-    logger = get_format_logger(logger_name, ["location", "key", "cost", "ret"])
+    logger = logging.getLogger(logger_name)
 
     @wraps(fn)
     def _wrapper(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
         _start = time.monotonic()
         location = fn.__name__
+        key = "-"
+        try:
+            if args:
+                key = str(args[0])
+            location = get_caller_location(fn)
+            if callable(format_key):
+                key = format_key(*args, **kwargs)
+        except Exception:
+            pass
 
         ret = None
         try:
             ret = fn(*args, **kwargs)
-        finally:
-            # 耗时
-            _end = time.monotonic()
-            cost = "%.3f" % ((_end - _start) * 1000)
-            # 日志记录结果
+        except Exception as exc:
+            cost = "%.3f" % ((time.monotonic() - _start) * 1000)
+            logger.log(logger_level, "%s %s %s %s", location, key, cost, exc, exc_info=True)
+            raise
+        else:
+            cost = "%.3f" % ((time.monotonic() - _start) * 1000)
             _ret = ret
-            # 日志记录的唯一标识
-            key = "-"
             try:
-                if args and len(args) > 0:
-                    key = str(args[0])
-                location = get_caller_location(fn)
-                if callable(format_key):
-                    key = format_key(*args, **kwargs)
-
                 if callable(format_ret):
                     _ret = format_ret(ret)
-                logger.info(dict(location=location, key=key, cost=cost, ret=_ret))
+                logger.info("%s %s %s %s", location, key, cost, _ret)
             except Exception as e:
-                logger.log(logger_level, dict(location=location, key=key, cost=cost, ret=str(e)), exc_info=True)
+                logger.log(logger_level, "%s %s %s %s", location, key, cost, e, exc_info=True)
 
-        # 返回正确结果
         return ret
 
     return _wrapper
