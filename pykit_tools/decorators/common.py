@@ -158,9 +158,9 @@ def time_record(
         location = fn.__name__
         key = "-"
         try:
+            location = get_caller_location(fn)
             if args:
                 key = str(args[0])
-            location = get_caller_location(fn)
             if callable(format_key):
                 key = format_key(*args, **kwargs)
         except Exception:
@@ -175,7 +175,7 @@ def time_record(
             raise
         else:
             cost = "%.3f" % ((time.monotonic() - _start) * 1000)
-            _ret = ret
+            _ret = "-" if ret is None else ret
             try:
                 if callable(format_ret):
                     _ret = format_ret(ret)

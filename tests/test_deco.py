@@ -95,7 +95,7 @@ def test_time_record(caplog):
     fn = time_record(test, format_key=lambda v: "key" + 1)
     fn(value)
     assert len(caplog.records) == 1
-    assert caplog.records[0].levelname == "ERROR"
+    assert caplog.records[0].levelname == "INFO"
 
     # test for other ...
 
@@ -109,3 +109,56 @@ def test_time_record(caplog):
     assert key == "-"
     assert float(cost) >= 0
     assert ret == "-"
+
+
+def test_time_record_fn_raises(caplog):
+    """lines 172-175: 被装饰函数抛异常时，应记录 ERROR 日志后 re-raise"""
+    caplog.set_level(logging.DEBUG, "pykit_tools.error")
+
+    @time_record()
+    def boom(x):
+        raise ValueError("boom!")
+
+    with pytest.raises(ValueError, match="boom!"):
+        boom("k")
+
+    assert len(caplog.records) == 1
+    record = caplog.records[0]
+    assert record.levelno == logging.ERROR
+    assert "boom!" in record.getMessage()
+    assert record.exc_info is not None
+
+
+def test_time_record_fn_raises_custom_level(caplog):
+    """lines 172-175: logger_level 参数影响异常时的日志级别"""
+    caplog.set_level(logging.DEBUG, "pykit_tools.error")
+
+    @time_record(logger_level=logging.WARNING)
+    def boom():
+        raise RuntimeError("warn-level")
+
+    with pytest.raises(RuntimeError):
+        boom()
+
+    assert caplog.records[0].levelno == logging.WARNING
+
+
+def test_time_record_format_ret_raises(caplog):
+    """lines 183-184: format_ret 抛异常时，走兜底 logger.log，原始返回值仍正常返回"""
+    caplog.set_level(logging.DEBUG, "pykit_tools.error")
+
+    def bad_format(v):
+        raise TypeError("format fail")
+
+    @time_record(format_ret=bad_format)
+    def give_value():
+        return 42
+
+    result = give_value()
+    assert result == 42
+
+    assert len(caplog.records) == 1
+    record = caplog.records[0]
+    assert record.levelno == logging.ERROR
+    assert "format fail" in record.getMessage()
+    assert record.exc_info is not None

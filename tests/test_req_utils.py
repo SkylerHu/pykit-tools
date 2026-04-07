@@ -681,8 +681,8 @@ class TestRequestsLogger:
         assert "json:" in msg
         assert "response:" in msg
 
-    def test_logger_info_when_exception_str_is_empty(self, caplog):
-        """测试当异常字符串为空时使用 logger.info（覆盖 line 102）"""
+    def test_logger_error_when_exception_str_is_empty(self, caplog):
+        """测试当异常字符串为空时，仍然使用 logger_level（默认 ERROR）记录日志"""
         caplog.set_level(logging.DEBUG, "pykit_tools.requests")
 
         class EmptyStrException(Exception):
@@ -698,8 +698,8 @@ class TestRequestsLogger:
         result = mock_request("GET", "http://example.com", raise_for=None)
         assert result is None
         assert len(caplog.records) == 1
-        # 当 err = "" 时，if err 为 False，会执行 logger.info
-        assert caplog.records[0].levelname == "INFO"
+        # except 分支始终以 logger_level 记录，与异常字符串内容无关
+        assert caplog.records[0].levelname == "ERROR"
         assert "GET http://example.com" in caplog.records[0].message
 
 

@@ -113,8 +113,10 @@ def requests_logger(
             if kwargs:
                 req_msg = f"{req_msg}\n\tkwargs: {kwargs}"
 
+        def _build_extra(*parts: str) -> str:
+            return "".join(f"\n\t{p}" for p in parts if p)
+
         response = None
-        err = ""
         code = 0
         length = 0
         resp_msg = ""
@@ -128,26 +130,37 @@ def requests_logger(
                 try:
                     resp_msg = format_resp(response) if callable(format_resp) else response.text
                 except Exception as _e:
-                    resp_msg = f"parse response.text error]: {_e}"
+                    resp_msg = "parse response.text error]: %s" % _e
         except Exception as e:
-            err = str(e)
+            cost = (time.monotonic() - _start) * 1000
+            logger.log(
+                logger_level,
+                "%s %s %s %s %.3f %s%s",
+                method.upper(),
+                url,
+                code,
+                length,
+                cost,
+                e,
+                _build_extra("request: %s" % req_msg if req_msg else ""),
+                exc_info=True,
+            )
             if raise_for and isinstance(e, raise_for):
                 raise
-        finally:
-            # 耗时
-            _end = time.monotonic()
-            cost = (_end - _start) * 1000
-            # 日志内容
-            msg = f"{method.upper()} {url} {code} {length} {cost:.3f} {err or '-'}"
-            if req_msg:
-                msg = f"{msg}\n\trequest: {req_msg}"
-            if resp_msg:
-                msg = f"{msg}\n\tresponse: {resp_msg}"
-
-            if err:
-                logger.log(logger_level, msg, exc_info=True)
-            else:
-                logger.info(msg)
+        else:
+            cost = (time.monotonic() - _start) * 1000
+            logger.info(
+                "%s %s %s %s %.3f -%s",
+                method.upper(),
+                url,
+                code,
+                length,
+                cost,
+                _build_extra(
+                    "request: %s" % req_msg if req_msg else "",
+                    "response: %s" % resp_msg if resp_msg else "",
+                ),
+            )
 
         # 返回结果
         return response
