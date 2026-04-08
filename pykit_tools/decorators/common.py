@@ -64,16 +64,16 @@ def handle_exception(
     def _wrapper(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
         result = None
         location = get_caller_location(fn)
-        error: typing.Optional[Exception] = Exception(f'Function "{location}" not executed')
+        has_err: bool = True
 
         count = 0
-        while error is not None and count < max_retries:
+        while has_err and count < max_retries:
             count += 1
             try:
                 result = fn(*args, **kwargs)
-                error = None
+                has_err = False
             except Exception as e:
-                error = e
+                has_err = True
                 _level = logger_pre_level if count < max_retries else logger_level
                 if log_args:
                     logging.getLogger(logger_name).log(
@@ -113,7 +113,7 @@ def handle_exception(
                         raise
                     break
 
-        if error is not None:
+        if has_err:
             result = default() if callable(default) else default
 
         return result
