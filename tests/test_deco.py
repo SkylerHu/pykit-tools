@@ -29,12 +29,19 @@ def test_handle_exception(caplog, monkeypatch):
     assert fn(1, "2") == 0
     assert len(caplog.records) == 2  # 重试了2次
 
-    # test for is_raise
+    # test for is_raise — retry_for 匹配时，重试耗尽后抛出 (line 109)
     caplog.clear()
     fn = handle_exception(test, default=0, max_retries=2, retry_for=TypeError, is_raise=True)
     with pytest.raises(TypeError):
         fn(1, "2")
     assert len(caplog.records) == 2  # 重试了2次
+
+    # test for is_raise — 异常类型不匹配 retry_for，直接抛出 (line 113)
+    caplog.clear()
+    fn = handle_exception(test, default=0, max_retries=2, retry_for=ValueError, is_raise=True)
+    with pytest.raises(TypeError):
+        fn(1, "2")
+    assert len(caplog.records) == 1  # 不匹配 retry_for，不重试，直接抛出
 
     # test for retry_delay/retry_jitter
     caplog.clear()

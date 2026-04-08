@@ -74,7 +74,7 @@ def handle_exception(
                 error = None
             except Exception as e:
                 error = e
-                _level = logger_level if count >= max_retries else logger_pre_level
+                _level = logger_pre_level if count < max_retries else logger_level
                 if log_args:
                     logging.getLogger(logger_name).log(
                         _level,
@@ -94,21 +94,26 @@ def handle_exception(
                         exc_info=True,
                     )
                 if isinstance(e, retry_for):
-                    # 可以记录重试
-                    if retry_delay > 0:
-                        # 延迟重试
-                        delay = retry_delay
-                        if retry_jitter:
-                            delay = int(random.randint(0, 100) * delay / 100.0)
-                        if delay > 0:
-                            time.sleep(delay)
+                    # 重试场景
+                    if count < max_retries:
+                        # 延迟重试，最后一次异常时不用延迟
+                        if retry_delay > 0:
+                            delay = retry_delay
+                            if retry_jitter:
+                                delay = int(random.randint(0, 100) * delay / 100.0)
+                            if delay > 0:
+                                time.sleep(delay)
+                    else:
+                        # 最后一次异常时抛出异常
+                        if is_raise:
+                            raise
                 else:
                     # 其他异常不重试
+                    if is_raise:
+                        raise
                     break
 
         if error is not None:
-            if is_raise:
-                raise error
             result = default() if callable(default) else default
 
         return result

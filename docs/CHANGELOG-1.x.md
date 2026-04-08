@@ -5,8 +5,9 @@
     - 调整logger输出日志使用“模板”
     - 修复：try finally中使用日志输出异常无法正常获取异常堆栈
     - 装饰器中日志输出日志模板增加了location信息作为聚合因子
-- fix: `handle_exception` 增加参数`logger_pre_level`
-    - 避免重试引起多次sentry错误上报
+- fix: 调整 `handle_exception`
+    - 增加参数`logger_pre_level`，避免重试引起多次sentry错误上报
+    - 优化调整`raise error`逻辑放在了except语句块中，直接raise
 
 ## 1.2.4
 - fix: 调整 `exec_command` 使用原生的 `subprocess.run` 超时参数设置
