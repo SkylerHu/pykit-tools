@@ -113,7 +113,7 @@ def requests_logger(
                 req_msg = f"{req_msg}\n\tjson: {json_str}"
             if kwargs:
                 req_msg = f"{req_msg}\n\tkwargs: {kwargs}"
-        host = urllib.parse.urlparse(url).netloc
+        host = urllib.parse.urlparse(url).netloc or "-"
 
         response = None
         code = 0
