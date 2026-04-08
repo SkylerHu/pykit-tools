@@ -37,6 +37,42 @@ def test_format_logger():
     logger.debug(dict(message="Hello world"))
 
 
+def test_get_format_logger_extra_none():
+    """extra=None (default) — _extra 只含自动注入的 hostname，不触发 update 分支"""
+    logger = adapter.get_format_logger("pykit_tools.extra_none", fields=["message"])
+    assert "hostname" in logger.extra
+    assert len(logger.extra) == 1
+
+
+def test_get_format_logger_extra_empty_dict():
+    """extra={} (falsy) — 与 None 行为一致，不触发 update 分支"""
+    logger = adapter.get_format_logger("pykit_tools.extra_empty", fields=["message"], extra={})
+    assert "hostname" in logger.extra
+    assert len(logger.extra) == 1
+
+
+def test_get_format_logger_extra_merged():
+    """extra 有值时，字段被合并进 _extra"""
+    logger = adapter.get_format_logger(
+        "pykit_tools.extra_merged",
+        fields=["message"],
+        extra={"app": "myapp", "env": "test"},
+    )
+    assert "hostname" in logger.extra
+    assert logger.extra["app"] == "myapp"
+    assert logger.extra["env"] == "test"
+
+
+def test_get_format_logger_extra_override_hostname():
+    """extra 中显式覆盖 hostname 时，自定义值生效"""
+    logger = adapter.get_format_logger(
+        "pykit_tools.extra_override",
+        fields=["message"],
+        extra={"hostname": "custom-host"},
+    )
+    assert logger.extra["hostname"] == "custom-host"
+
+
 def get_logger(name, **kwargs):
     file_name = os.path.join(os.getcwd(), f"{name}.log")
     _handler = handlers.MultiProcessTimedRotatingFileHandler(file_name, when="D", **kwargs)

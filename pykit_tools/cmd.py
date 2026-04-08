@@ -32,8 +32,6 @@ def exec_command(
         stderr 执行错误输出
 
     """
-    _log_cmd = f"[timeout {timeout} {command}]"
-
     kwargs: typing.Dict = {
         "text": True,
         "shell": True,
@@ -43,6 +41,7 @@ def exec_command(
     if popen_kwargs:
         kwargs.update(popen_kwargs)
 
+    _name = command.split()[0]  # 命令名称
     stdout, stderr = "", ""
     try:
         result: subprocess.CompletedProcess = subprocess.run(command, capture_output=True, timeout=timeout, **kwargs)
@@ -51,18 +50,18 @@ def exec_command(
         stderr = result.stderr
     except subprocess.TimeoutExpired:
         code = -9
-
-    # 记录日志
-    _msg = f"{_log_cmd} code={code}"
-    if code != 0 and err_max_length > 0:
-        log_err = stderr or ""
-        if len(stderr) > err_max_length:
-            # 截取前后一半，中间用...代替
-            pre_idx = err_max_length // 2
-            log_err = stderr[:pre_idx] + "\n\t...\n" + stderr[:-pre_idx]
-        _msg = f"{_msg}\n\tstderr: {log_err}"
-        logging.getLogger(logger_name).log(logger_level, _msg)
-    elif log_cmd:
-        logging.getLogger(logger_name).info(_msg)
+        logging.getLogger(logger_name).log(logger_level, f"{_name} code %s timeout %s %s", code, timeout, command)
+    else:
+        if code != 0 and err_max_length > 0:
+            log_err = stderr or ""
+            if len(log_err) > err_max_length:
+                # 截取前后一半，中间用...代替
+                pre_idx = err_max_length // 2
+                log_err = log_err[:pre_idx] + "\n\t...\n" + log_err[:-pre_idx]
+            logging.getLogger(logger_name).log(
+                logger_level, f"{_name} code %s timeout %s %s\n\tstderr: %s", code, timeout, command, log_err
+            )
+        elif log_cmd:
+            logging.getLogger(logger_name).info(f"{_name} code %s timeout %s %s", code, timeout, command)
 
     return code, stdout, stderr

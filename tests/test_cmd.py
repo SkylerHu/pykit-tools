@@ -35,7 +35,7 @@ def test_exec_command_log_cmd(monkeypatch, caplog):
     assert len(caplog.records) == 1
     assert caplog.records[0].levelname == "INFO"
     assert "ls -al" in caplog.records[0].message
-    assert "code=0" in caplog.records[0].message
+    assert "code 0" in caplog.records[0].message
 
 
 def test_exec_command_stderr_truncation(caplog):

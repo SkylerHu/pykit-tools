@@ -102,6 +102,7 @@ def method_deco_cache(
         )
 
     fn = typing.cast(typing.Callable, func)
+    _location = utils.get_caller_location(fn)
 
     _redis_conf = pykit_tools.settings.APP_CACHE_REDIS
     if _redis_conf:
@@ -129,7 +130,9 @@ def method_deco_cache(
                 data = json.loads(value)
                 has_cache = True
         except Exception:
-            logging.getLogger(logger_name).log(logger_level, f"load cache_data error key={_key}", exc_info=True)
+            logging.getLogger(logger_name).log(
+                logger_level, f"{_location} load cache_data error key=%s", _key, exc_info=True
+            )
         return has_cache, data
 
     def __allow_value_cache(value: typing.Any) -> bool:
@@ -156,8 +159,7 @@ def method_deco_cache(
         if key:
             _key = key(*args, **kwargs) if callable(key) else key
         else:
-            location = utils.get_caller_location(fn)
-            _key = f"method:{fn.__name__}:{str_tool.compute_md5(location, *args, **kwargs)}"
+            _key = f"method:{fn.__name__}:{str_tool.compute_md5(_location, *args, **kwargs)}"
 
         # 可传递 skip 不读取缓存
         if _scene in (CacheScene.DEFAULT.value,):
@@ -186,13 +188,13 @@ def method_deco_cache(
             _cache_str = json.dumps(ret, separators=(",", ":"))
             if len(_cache_str) > cache_max_length:
                 logging.getLogger(logger_name).log(
-                    logger_level, f"Cache too long, key={_key} limit is {cache_max_length}"
+                    logger_level, f"{_location} Cache too long, key=%s limit is %s", _key, cache_max_length
                 )
             else:
                 _client.set(_key, _cache_str, timeout)
         except Exception:
             logging.getLogger(logger_name).log(
-                logger_level, f"set cache_data error key={_key} ret={ret}", exc_info=True
+                logger_level, f"{_location} set cache_data error key=%s ret=%s", _key, ret, exc_info=True
             )
 
         return ret

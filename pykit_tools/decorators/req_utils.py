@@ -3,6 +3,7 @@
 import typing
 import time
 import logging
+import urllib.parse
 import json as json_tool
 
 from functools import wraps, partial
@@ -112,12 +113,11 @@ def requests_logger(
                 req_msg = f"{req_msg}\n\tjson: {json_str}"
             if kwargs:
                 req_msg = f"{req_msg}\n\tkwargs: {kwargs}"
+        host = urllib.parse.urlparse(url).netloc or "-"
 
         response = None
-        err = ""
         code = 0
         length = 0
-        resp_msg = ""
         _start = time.monotonic()
         try:
             response = fn(method, url, headers=headers, timeout=timeout, **kwargs)
@@ -128,26 +128,33 @@ def requests_logger(
                 try:
                     resp_msg = format_resp(response) if callable(format_resp) else response.text
                 except Exception as _e:
-                    resp_msg = f"parse response.text error]: {_e}"
+                    resp_msg = "parse response.text error]: %s" % _e
+                req_msg = f"{req_msg}\n\tresponse: {resp_msg}"
         except Exception as e:
-            err = str(e)
+            cost = (time.monotonic() - _start) * 1000
+            logger.log(
+                logger_level,
+                f"{host} {method.upper()} %s %s %s %.3f %s %s",
+                url,
+                code,
+                length,
+                cost,
+                e,
+                req_msg,
+                exc_info=True,
+            )
             if raise_for and isinstance(e, raise_for):
                 raise
-        finally:
-            # 耗时
-            _end = time.monotonic()
-            cost = (_end - _start) * 1000
-            # 日志内容
-            msg = f"{method.upper()} {url} {code} {length} {cost:.3f} {err or '-'}"
-            if req_msg:
-                msg = f"{msg}\n\trequest: {req_msg}"
-            if resp_msg:
-                msg = f"{msg}\n\tresponse: {resp_msg}"
-
-            if err:
-                logger.log(logger_level, msg, exc_info=True)
-            else:
-                logger.info(msg)
+        else:
+            cost = (time.monotonic() - _start) * 1000
+            logger.info(
+                f"{host} {method.upper()} %s %s %s %.3f - %s",
+                url,
+                code,
+                length,
+                cost,
+                req_msg,
+            )
 
         # 返回结果
         return response
